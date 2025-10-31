@@ -2,12 +2,152 @@
   "name": "skid-inc",
   "version": "0.0.0",
   "description": "Idle-game with hacking theme.",
+  "main": "src/main.js",
   "dependencies": {
     "http-server": "^0.9.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "electron-updater": "^6.1.7",
+    "electron-log": "^5.0.1"
+  },
   "scripts": {
-    "start": "http-server ."
+    "start": "http-server .",
+    "electron": "electron .",
+    "electron-dev": "electron . --dev",
+    "prebuild": "node build/prebuild.js",
+    "build": "npm run prebuild && electron-builder",
+    "build:win": "npm run prebuild && electron-builder --win",
+    "build:mac": "npm run prebuild && electron-builder --mac",
+    "build:linux": "npm run prebuild && electron-builder --linux",
+    "build:all": "npm run prebuild && electron-builder --win --mac --linux",
+    "build:dir": "npm run prebuild && electron-builder --dir",
+    "build:automated": "node build/automated-build.js",
+    "build:ci": "BUILD_PLATFORMS=current npm run build:automated",
+    "build:release": "BUILD_PLATFORMS=all npm run build:automated",
+    "deploy": "node build/deploy.js",
+    "deploy:github": "DEPLOY_TARGETS=github npm run deploy",
+    "deploy:s3": "DEPLOY_TARGETS=s3 npm run deploy",
+    "deploy:all": "DEPLOY_TARGETS=github,s3 npm run deploy",
+    "deploy:dry-run": "DRY_RUN=true npm run deploy",
+    "release": "npm run build:release && npm run deploy:github",
+    "release:dry-run": "npm run build:automated && npm run deploy:dry-run",
+    "dist": "npm run build",
+    "dist:win": "npm run build:win",
+    "dist:mac": "npm run build:mac",
+    "dist:linux": "npm run build:linux",
+    "pack": "electron-builder --dir",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "build": {
+    "appId": "com.totominc.skidinc",
+    "productName": "Skid-Inc",
+    "copyright": "Copyright © 2025 TotomInc",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "app/**/*",
+      "index.html",
+      "favicon.png",
+      "!**/*.md",
+      "!test-*.js",
+      "!test-*.html",
+      "!netlify.toml",
+      "!.eslintrc"
+    ],
+    "extraResources": [
+      {
+        "from": "README.md",
+        "to": "README.md"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "publisherName": "TotomInc",
+      "verifyUpdateCodeSignature": false,
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Skid-Inc"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "category": "public.app-category.games",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
+    },
+    "dmg": {
+      "title": "Skid-Inc ${version}",
+      "contents": [
+        {
+          "x": 410,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 130,
+          "y": 150,
+          "type": "file"
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        },
+        {
+          "target": "rpm",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "Game",
+      "synopsis": "Idle game with hacking theme",
+      "description": "Skid-Inc is an idle game with a hacking theme where you progress through various levels and manage servers.",
+      "desktop": {
+        "Name": "Skid-Inc",
+        "Comment": "Idle game with hacking theme",
+        "Categories": "Game;",
+        "Keywords": "game;idle;hacking;"
+      }
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "TotomInc",
+      "repo": "skid-inc"
+    }
   },
   "repository": {
     "type": "git",

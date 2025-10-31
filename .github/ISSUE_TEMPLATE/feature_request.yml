@@ -1,0 +1,121 @@
+name: ✨ Demande de Fonctionnalité
+description: Suggérer une nouvelle fonctionnalité pour Skid-Inc
+title: "[FEATURE] "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de suggérer une amélioration pour Skid-Inc ! 
+        Vos idées nous aident à améliorer l'application.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Vérifications préliminaires
+      options:
+        - label: J'ai cherché dans les issues existantes et cette fonctionnalité n'a pas déjà été demandée
+          required: true
+        - label: Cette fonctionnalité est liée à l'application desktop Skid-Inc
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problème à résoudre
+      description: Quel problème cette fonctionnalité résoudrait-elle ?
+      placeholder: |
+        Décrivez le problème ou la limitation actuelle...
+        Ex: "Il est difficile de gérer plusieurs sauvegardes car..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solution proposée
+      description: Décrivez la fonctionnalité que vous aimeriez voir ajoutée
+      placeholder: |
+        Décrivez votre solution idéale...
+        Ex: "J'aimerais pouvoir organiser mes sauvegardes en dossiers..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Catégorie
+      description: Dans quelle catégorie cette fonctionnalité s'inscrit-elle ?
+      options:
+        - Interface utilisateur
+        - Système de sauvegarde
+        - Gestion des données
+        - Performance
+        - Accessibilité
+        - Intégration système
+        - Paramètres/Configuration
+        - Autre
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorité
+      description: Quelle importance accordez-vous à cette fonctionnalité ?
+      options:
+        - Critique (indispensable)
+        - Élevée (très utile)
+        - Moyenne (serait bien)
+        - Faible (nice-to-have)
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considérées
+      description: Avez-vous pensé à d'autres solutions ou contournements ?
+      placeholder: |
+        Décrivez les alternatives que vous avez envisagées...
+        Ex: "J'ai essayé d'utiliser... mais cela ne fonctionne pas car..."
+
+  - type: textarea
+    id: use_cases
+    attributes:
+      label: Cas d'usage
+      description: Dans quelles situations cette fonctionnalité serait-elle utilisée ?
+      placeholder: |
+        Décrivez des scénarios concrets d'utilisation...
+        Ex: "Quand je joue pendant plusieurs heures, j'aimerais..."
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Maquettes ou exemples
+      description: Si vous avez des idées visuelles, des captures d'écran d'autres applications, etc.
+      placeholder: Glissez-déposez vos images ici ou décrivez visuellement votre idée...
+
+  - type: checkboxes
+    id: implementation
+    attributes:
+      label: Implémentation
+      description: Seriez-vous intéressé(e) à contribuer à cette fonctionnalité ?
+      options:
+        - label: Je serais intéressé(e) à aider avec la conception
+        - label: Je serais intéressé(e) à aider avec le développement
+        - label: Je serais intéressé(e) à aider avec les tests
+        - label: Je peux fournir des retours détaillés pendant le développement
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Informations supplémentaires
+      description: Toute autre information pertinente
+      placeholder: |
+        - Références à d'autres applications qui ont cette fonctionnalité
+        - Liens vers des ressources utiles
+        - Contraintes techniques à considérer
+        - etc.

@@ -1,0 +1,132 @@
+name: 🐛 Rapport de Bug
+description: Signaler un problème avec l'application Skid-Inc
+title: "[BUG] "
+labels: ["bug", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de prendre le temps de signaler ce problème ! 
+        Veuillez remplir ce formulaire avec le plus de détails possible.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Vérifications préliminaires
+      description: Avant de soumettre ce rapport, veuillez vérifier les points suivants
+      options:
+        - label: J'ai cherché dans les issues existantes et ce problème n'a pas déjà été signalé
+          required: true
+        - label: J'utilise la dernière version disponible de l'application
+          required: true
+        - label: J'ai redémarré l'application pour voir si le problème persiste
+          required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Plateforme
+      description: Sur quelle plateforme rencontrez-vous ce problème ?
+      options:
+        - Windows 10
+        - Windows 11
+        - macOS (Intel)
+        - macOS (Apple Silicon)
+        - Linux (Ubuntu/Debian)
+        - Linux (Red Hat/Fedora)
+        - Linux (Arch)
+        - Linux (Autre)
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version de l'application
+      description: Quelle version de Skid-Inc utilisez-vous ? (Menu Aide > À propos)
+      placeholder: "ex: v1.0.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description du problème
+      description: Décrivez clairement le problème rencontré
+      placeholder: Décrivez ce qui ne fonctionne pas comme attendu...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Étapes pour reproduire
+      description: Comment reproduire ce problème ?
+      placeholder: |
+        1. Aller à '...'
+        2. Cliquer sur '...'
+        3. Faire défiler jusqu'à '...'
+        4. Voir l'erreur
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportement attendu
+      description: Que devrait-il se passer normalement ?
+      placeholder: Décrivez ce qui devrait se passer...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Comportement actuel
+      description: Que se passe-t-il réellement ?
+      placeholder: Décrivez ce qui se passe actuellement...
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Captures d'écran
+      description: Si applicable, ajoutez des captures d'écran pour illustrer le problème
+      placeholder: Glissez-déposez vos images ici ou collez les liens...
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs d'erreur
+      description: |
+        Si vous avez des messages d'erreur ou des logs, collez-les ici.
+        Vous pouvez ouvrir les outils de développement avec F12 pour voir les erreurs de console.
+      placeholder: Collez les logs d'erreur ici...
+      render: shell
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Informations supplémentaires
+      description: Toute autre information qui pourrait être utile
+      placeholder: |
+        - Configuration système particulière
+        - Autres applications en cours d'exécution
+        - Modifications récentes du système
+        - etc.
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Gravité
+      description: À quel point ce problème affecte-t-il votre utilisation ?
+      options:
+        - Critique (l'application ne fonctionne pas du tout)
+        - Élevée (fonctionnalité importante cassée)
+        - Moyenne (gêne dans l'utilisation)
+        - Faible (problème mineur)
+    validations:
+      required: true

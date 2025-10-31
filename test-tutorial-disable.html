@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Tutorial Disable</title>
+    <style>
+        .intro { display: block; background: red; padding: 20px; }
+        .game { display: none; background: green; padding: 20px; }
+        .tutorial-hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="intro default">
+        <h2>TUTORIAL SCREEN (Should be hidden when save is loaded)</h2>
+        <p>This simulates the SkidInc tutorial intro screen</p>
+    </div>
+    
+    <div class="game default">
+        <h2>GAME SCREEN (Should be visible when save is loaded)</h2>
+        <p>This simulates the main game screen</p>
+        <input id="command-input" type="text" placeholder="Command input">
+    </div>
+    
+    <button onclick="testTutorialDisable()">Test Tutorial Disable</button>
+    <button onclick="testSaveLoad()">Test Save Load</button>
+    
+    <div id="log"></div>
+    
+    <script>
+        // Simulate SkidInc game object
+        window.skidinc = {
+            tutorial: {
+                enabled: true,
+                finish: false,
+                step: 0,
+                finished: function() {
+                    console.log('Tutorial finished called');
+                    this.enabled = false;
+                    this.finish = true;
+                    document.querySelector('.intro').style.display = 'none';
+                    document.querySelector('.game').style.display = 'block';
+                    document.querySelector('#command-input').focus();
+                },
+                skip: function() {
+                    console.log('Tutorial skip called');
+                    this.finished();
+                }
+            },
+            console: {
+                inputEnabled: false
+            }
+        };
+        
+        // Simulate save manager methods
+        function ensureTutorialCompleted() {
+            try {
+                console.log('Ensuring tutorial is completed...');
+                
+                // Set tutorial as completed in SkidInc game object
+                if (typeof window.skidinc !== 'undefined' && window.skidinc && window.skidinc.tutorial) {
+                    window.skidinc.tutorial.enabled = false;
+                    window.skidinc.tutorial.finish = true;
+                    window.skidinc.tutorial.step = 3;
+                    
+                    // Call the tutorial finished method if it exists
+                    if (typeof window.skidinc.tutorial.finished === 'function') {
+                        window.skidinc.tutorial.finished();
+                    }
+                    
+                    // Call the skip method if it exists
+                    if (typeof window.skidinc.tutorial.skip === 'function') {
+                        window.skidinc.tutorial.skip();
+                    }
+                }
+                
+                // Set in localStorage as well
+                localStorage.setItem('tutorial', JSON.stringify({ 
+                    finish: true, 
+                    enabled: false, 
+                    step: 3 
+                }));
+                
+                // Hide intro screen if it exists
+                const introElement = document.querySelector('.intro');
+                if (introElement) {
+                    introElement.style.display = 'none';
+                }
+                
+                // Show game screen if it exists
+                const gameElement = document.querySelector('.game');
+                if (gameElement) {
+                    gameElement.style.display = 'block';
+                    gameElement.style.opacity = '1';
+                }
+                
+                // Focus on command input if it exists
+                const commandInput = document.querySelector('#command-input');
+                if (commandInput) {
+                    commandInput.focus();
+                }
+                
+                // Enable console input if skidinc console exists
+                if (typeof window.skidinc !== 'undefined' && window.skidinc && window.skidinc.console) {
+                    window.skidinc.console.inputEnabled = true;
+                }
+                
+                log('Tutorial completion ensured - tutorial disabled');
+            } catch (error) {
+                log('Error ensuring tutorial completion: ' + error.message);
+            }
+        }
+        
+        function testTutorialDisable() {
+            log('Testing tutorial disable...');
+            ensureTutorialCompleted();
+            
+            // Check results
+            setTimeout(() => {
+                const introVisible = document.querySelector('.intro').style.display !== 'none';
+                const gameVisible = document.querySelector('.game').style.display !== 'none';
+                
+                log('Results:');
+                log('- Tutorial enabled: ' + window.skidinc.tutorial.enabled);
+                log('- Tutorial finished: ' + window.skidinc.tutorial.finish);
+                log('- Intro visible: ' + introVisible);
+                log('- Game visible: ' + gameVisible);
+                log('- Console input enabled: ' + window.skidinc.console.inputEnabled);
+                
+                if (!window.skidinc.tutorial.enabled && window.skidinc.tutorial.finish && !introVisible && gameVisible) {
+                    log('✅ Tutorial disable test PASSED');
+                } else {
+                    log('❌ Tutorial disable test FAILED');
+                }
+            }, 100);
+        }
+        
+        function testSaveLoad() {
+            log('Testing save load with tutorial disable...');
+            
+            // Simulate loading a save
+            const gameState = {
+                player: { username: 'TestUser', level: 5, money: 1000 },
+                tutorial: { finish: true }
+            };
+            
+            // Apply game state (this would normally call ensureTutorialCompleted)
+            ensureTutorialCompleted();
+            
+            log('Save loaded - tutorial should be disabled');
+        }
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += '<div>' + new Date().toLocaleTimeString() + ': ' + message + '</div>';
+            console.log(message);
+        }
+        
+        // Initial state
+        log('Initial state - tutorial should be visible');
+        log('Tutorial enabled: ' + window.skidinc.tutorial.enabled);
+        log('Tutorial finished: ' + window.skidinc.tutorial.finish);
+    </script>
+</body>
+</html>

@@ -1,3 +1,10 @@
 node_modules
 .netlify
 .vscode
+
+# Electron build outputs
+dist/
+out/
+
+# Electron debug logs
+*.log
