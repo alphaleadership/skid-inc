@@ -32,10 +32,7 @@ jobs:
             platform: win
             arch: x64
             artifact: win-x64
-          - os: macos-latest
-            platform: mac
-            arch: universal
-            artifact: mac-universal
+      
           - os: ubuntu-latest
             platform: linux
             arch: x64
