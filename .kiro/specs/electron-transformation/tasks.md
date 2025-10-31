@@ -226,6 +226,7 @@
 
 
 
+
     - Configurer les builds pour Windows, macOS et Linux
     - Créer les icônes et métadonnées d'application
     - Configurer la signature de code et les certificats

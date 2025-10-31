@@ -122,7 +122,7 @@ jobs:
           ls -la dist/ || echo "No dist directory found"
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
           path: |
@@ -139,7 +139,7 @@ jobs:
 
       - name: Upload build logs on failure
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-logs-${{ matrix.artifact }}
           path: |
@@ -165,7 +165,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
 
