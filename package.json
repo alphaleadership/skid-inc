@@ -52,7 +52,7 @@
       "src/**/*",
       "app/**/*",
       "index.html",
-      "favicon.png",
+    
       "!**/*.md",
       "!test-*.js",
       "!test-*.html",
