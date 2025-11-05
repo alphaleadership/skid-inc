@@ -151,7 +151,7 @@ jobs:
           # Commit changes
           git add package.json
           git commit -m "chore: bump version to $NEW_VERSION"
-          git push origin main
+          git push origin master
           
           # Create tag
           git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
