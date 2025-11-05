@@ -4,7 +4,7 @@ const AutoSaveManager = require('./auto-save-manager');
 const FileSystemManager = require('./filesystem-manager');
 const MigrationManager = require('./migration-manager');
 const StartupOptimizer = require('./startup-optimizer');
-const AutoUpdateManager = require('../build/auto-updater');
+//const AutoUpdateManager = require('./auto-updater');
 const isDev = process.argv.includes('--dev');
 
 class ElectronApp {
@@ -95,7 +95,7 @@ class ElectronApp {
     });
 
     // Initialize auto-updater
-    this.initializeAutoUpdater();
+   // this.initializeAutoUpdater();
   }
 
   setupMenu() {
@@ -1223,10 +1223,10 @@ class ElectronApp {
       }
 
       // Initialize auto-updater
-      this.autoUpdateManager = new AutoUpdateManager(this.mainWindow);
+   //   this.autoUpdateManager = new AutoUpdateManager(this.mainWindow);
       
       // Schedule automatic update checks
-      this.autoUpdateManager.scheduleUpdateChecks();
+  //    this.autoUpdateManager.scheduleUpdateChecks();
       
       console.log('Auto-updater initialized successfully');
     } catch (error) {
