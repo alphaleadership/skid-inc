@@ -41,14 +41,34 @@ class AutomatedBuilder {
     try {
       const result = execSync(command, { 
         encoding: 'utf8', 
-        stdio: 'pipe',
-        ...options 
+        stdio: options.captureOutput ? 'pipe' : 'inherit',
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer
+        ...options
       });
-      this.log(`Command completed successfully`);
+      
+      if (options.captureOutput) {
+        // Log each line of output
+        const lines = result.split('\n').filter(line => line.trim());
+        lines.forEach(line => this.log(`OUTPUT: ${line}`));
+        return result;
+      }
+      
       return result;
     } catch (error) {
-      this.log(`Command failed: ${error.message}`, 'error');
-      throw error;
+      // Capture error output
+      let errorOutput = '';
+      if (error.stdout) {
+        errorOutput += `STDOUT:\n${error.stdout}\n`;
+      }
+      if (error.stderr) {
+        errorOutput += `STDERR:\n${error.stderr}\n`;
+      }
+      if (error.message) {
+        errorOutput += `ERROR: ${error.message}`;
+      }
+      
+      this.log(`Command failed: ${errorOutput}`, 'error');
+      throw new Error(`Command failed: ${command}`);
     }
   }
 
@@ -172,10 +192,46 @@ class AutomatedBuilder {
     }
 
     const buildStart = Date.now();
-    await this.executeCommand(buildCommand);
-    const buildTime = Date.now() - buildStart;
-    
-    this.log(`Platform ${platform} built successfully in ${Math.round(buildTime / 1000)}s`);
+    try {
+      // Capture full console output during build
+      await this.executeCommand(buildCommand, { captureOutput: true });
+      const buildTime = Date.now() - buildStart;
+      
+      this.log(`Platform ${platform} built successfully in ${Math.round(buildTime / 1000)}s`);
+    } catch (error) {
+      const buildTime = Date.now() - buildStart;
+      this.log(`Platform ${platform} build failed after ${Math.round(buildTime / 1000)}s`, 'error');
+      
+      // Generate error report with full context
+      const errorReport = {
+        timestamp: new Date().toISOString(),
+        version: this.config.version,
+        platform,
+        command: buildCommand,
+        buildTimeMs: buildTime,
+        error: error.message,
+        buildLog: this.buildLog,
+        systemInfo: {
+          nodeVersion: process.version,
+          platform: os.platform(),
+          arch: os.arch(),
+          totalMemory: os.totalmem(),
+          freeMemory: os.freemem()
+        }
+      };
+      
+      // Save error report
+      const errorDir = path.join(this.config.outputDir, 'build-errors');
+      if (!fs.existsSync(errorDir)) {
+        fs.mkdirSync(errorDir, { recursive: true });
+      }
+      
+      const errorFile = path.join(errorDir, `error-${Date.now()}.json`);
+      fs.writeFileSync(errorFile, JSON.stringify(errorReport, null, 2));
+      
+      this.log(`Error report saved to: ${errorFile}`, 'error');
+      throw error;
+    }
   }
 
   async generateBuildReport() {

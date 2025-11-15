@@ -14,6 +14,8 @@ const os = require('os');
 
 const platform = process.argv[2] || 'win';
 
+function debugBuild() {
+
 console.log('🔍 Enhanced Build Debug Tool');
 console.log('================================');
 
@@ -176,3 +178,12 @@ console.log('- Additional logs: dist/builder-debug.yml');
 console.log('- Effective config: dist/builder-effective-config.yaml');
 
 console.log('\n✨ Debug analysis complete!');
+}
+
+// Export for use in other scripts
+module.exports = { debugBuild };
+
+// Run debug if called directly
+if (require.main === module) {
+  debugBuild();
+}
