@@ -83,13 +83,6 @@
       "verifyUpdateCodeSignature": false,
       "requestedExecutionLevel": "asInvoker"
     },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "Skid-Inc"
-    },
     "mac": {
       "icon": "icons/icon.png",
       "target": [
