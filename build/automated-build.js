@@ -81,7 +81,7 @@ class AutomatedBuilder {
     
     // Check npm version
     try {
-      const npmVersion = await this.executeCommand('"C:\\Users\\alpha\\nvs\\default\\npm.cmd" --version', { captureOutput: true });
+      const npmVersion = await this.executeCommand('npm --version');
       this.log(`npm version: ${npmVersion.trim()}`);
     } catch (error) {
       throw new Error('npm not found. Please install Node.js and npm.');
@@ -147,13 +147,13 @@ class AutomatedBuilder {
 
   async installDependencies() {
     this.log('Installing/updating dependencies...');
-    await this.executeCommand('"C:\\Users\\alpha\\nvs\\default\\npm.cmd" ci');
+    await this.executeCommand('npm ci');
     this.log('Dependencies installed successfully');
   }
 
   async runPreBuild() {
     this.log('Running pre-build tasks...');
-    await this.executeCommand('"C:\\Users\\alpha\\nvs\\default\\npm.cmd" run prebuild');
+    await this.executeCommand('npm run prebuild');
     this.log('Pre-build tasks completed');
   }
 
@@ -172,22 +172,22 @@ class AutomatedBuilder {
     switch (platform) {
       case 'win':
       case 'windows':
-        buildCommand = '"C:\\Users\\alpha\\nvs\\default\\npm.cmd" run build:win';
+        buildCommand = 'npm run build:win';
         break;
       case 'mac':
       case 'macos':
       case 'darwin':
-        buildCommand = '"C:\\Users\\alpha\\nvs\\default\\npm.cmd" run build:mac';
+        buildCommand = 'npm run build:mac';
         break;
       case 'linux':
-        buildCommand = '"C:\\Users\\alpha\\nvs\\default\\npm.cmd" run build:linux';
+        buildCommand = 'npm run build:linux';
         break;
       case 'all':
-        buildCommand = '"C:\\Users\\alpha\\nvs\\default\\npm.cmd" run build:all';
+        buildCommand = 'npm run build:all';
         break;
       case 'current':
       default:
-        buildCommand = '"C:\\Users\\alpha\\nvs\\default\\npm.cmd" run build';
+        buildCommand = 'npm run build';
         break;
     }
 
