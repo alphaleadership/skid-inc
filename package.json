@@ -19,6 +19,7 @@
     "prebuild": "node build/prebuild.js",
     "build": "npm run prebuild && electron-builder",
     "build:win": "npm run prebuild && electron-builder --win",
+    "build:win-nsis": "node scripts/build-nsis.js",
     "build:mac": "npm run prebuild && electron-builder --mac",
     "build:linux": "npm run prebuild && electron-builder --linux",
     "build:all": "npm run prebuild && electron-builder --win --mac --linux",
@@ -44,6 +45,7 @@
     "appId": "com.totominc.skidinc",
     "productName": "Skid-Inc",
     "copyright": "Copyright © 2025 TotomInc",
+    "compression": "store",
     "directories": {
       "output": "dist",
       "buildResources": "build"
@@ -68,13 +70,8 @@
     ],
     "win": {
       "icon": "icons/icon.png",
+      "compression": "store",
       "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
         {
           "target": "portable",
           "arch": [
