@@ -8,6 +8,7 @@ const { execSync } = require('child_process');
 const { logBuildError } = require('../scripts/error-handler');
 const { debugBuild } = require('../scripts/debug-build');
 console.log('Starting pre-build process...');
+console.log(typeof debugBuild)
 debugBuild(); 
 try {
   // 1. Create build info
