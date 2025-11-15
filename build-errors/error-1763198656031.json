@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-11-15T09:24:16.030Z",
+  "version": "0.0.2",
+  "error": "npm not found. Please install Node.js and npm.",
+  "stack": "Error: npm not found. Please install Node.js and npm.\n    at AutomatedBuilder.validateEnvironment (C:\\Users\\alpha\\skid-inc\\build\\automated-build.js:87:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async AutomatedBuilder.run (C:\\Users\\alpha\\skid-inc\\build\\automated-build.js:315:7)",
+  "buildLog": [
+    "[2025-11-15T09:24:15.650Z] [INFO] Starting automated build for Skid-Inc v0.0.2",
+    "[2025-11-15T09:24:15.659Z] [INFO] Validating build environment...",
+    "[2025-11-15T09:24:15.659Z] [INFO] Node.js version: v24.5.0",
+    "[2025-11-15T09:24:15.659Z] [INFO] Executing: \"C:\\Users\\alpha\\nvs\\default\\npm.cmd\" --version",
+    "[2025-11-15T09:24:16.030Z] [ERROR] Build failed: npm not found. Please install Node.js and npm."
+  ]
+}

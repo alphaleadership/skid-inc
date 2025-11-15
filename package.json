@@ -50,7 +50,6 @@
     "compression": "store",
     "nodeGypRebuild": false,
     "buildDependenciesFromSource": false,
-    "beforeBuild": "node build/prebuild.js",
     "detectUpdateChannel": false,
     "electronDownload": {
       "cache": "electron-cache"
