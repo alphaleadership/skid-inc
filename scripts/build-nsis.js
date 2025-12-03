@@ -50,15 +50,15 @@ try {
   
   // Set NSIS configuration with compression
   packageJson.build.win = {
-    ...originalWinConfig,
+    ...originalWinConfig,"forceCodeSigning": false,
     target: [
       {
         "target": "nsis",
-        "arch": ["x64"]
+        "arch": ["x64"],"forceCodeSigning": false
       },
       {
         "target": "portable", 
-        "arch": ["x64"]
+        "arch": ["x64"],"forceCodeSigning": false
       }
     ]
   };
