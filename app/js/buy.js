@@ -44,9 +44,9 @@ skidinc.buy.execute = function(args) {
         var i = category,
             category = skidinc.buy.categories[i];
         
-        if (args[0] == category) {
+        if (args[0] == category.trim()) {
             exists = true;
-            c = category;
+            c = category.trim();
         };
     };
     
@@ -55,6 +55,7 @@ skidinc.buy.execute = function(args) {
     
     if (exists) {
         var item = (typeof args[1] == 'undefined') ? undefined : args[1],
+            item=item.trim()
             amount = 1,
             qIndex;
         
