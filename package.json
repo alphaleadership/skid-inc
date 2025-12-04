@@ -26,7 +26,7 @@
     "build:linux": "npm run prebuild && electron-builder --linux",
     "build:all": "npm run prebuild && electron-builder --win --mac --linux",
     "build:dir": "npm run prebuild && electron-builder --dir",
-    "build:automated": "node build/automated-build.js",
+    "build:automated": "npm run prebuild && electron-builder --win --mac --linux --x64 --skip-sign",
     "build:ci": "BUILD_PLATFORMS=current npm run build:automated",
     "build:release": "BUILD_PLATFORMS=all npm run build:automated",
     "deploy": "node build/deploy.js",
@@ -67,8 +67,8 @@
       "!test-*.js",
       "!test-*.html",
       "!netlify.toml",
-      "!.eslintrc","favicon.png"
-
+      "!.eslintrc",
+      "favicon.png"
     ],
     "extraResources": [
       {
@@ -83,9 +83,7 @@
       "target": [
         {
           "target": "portable",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         }
       ],
       "publisherName": "TotomInc",
@@ -97,17 +95,11 @@
       "target": [
         {
           "target": "dmg",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
+          "arch": ["x64", "arm64"]
         },
         {
           "target": "zip",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
+          "arch": ["x64", "arm64"]
         }
       ],
       "category": "public.app-category.games",
@@ -137,21 +129,15 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         },
         {
           "target": "deb",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         },
         {
           "target": "rpm",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         }
       ],
       "category": "Game",
