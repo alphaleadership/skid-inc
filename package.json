@@ -16,7 +16,7 @@
     "start": "http-server .",
     "electron": "electron .",
     "electron-dev": "electron . --dev",
-    "prebuild": "node build/prebuild.js && electron-builder create-self-signed-cert",
+    "prebuild": "node build/prebuild.js && electron-builder create-self-signed-cert -p arbinger ",
     "build": "npm run prebuild && electron-builder",
     "build:win": "npm run prebuild && electron-builder --win",
     "build:win-nsis": "node scripts/build-nsis.js",
