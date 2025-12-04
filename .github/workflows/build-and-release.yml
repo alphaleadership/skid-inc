@@ -40,7 +40,10 @@ jobs:
             arch: x64
             artifact: linux-x64
 
-        
+          - os: macos-latest
+            platform: mac
+            arch: x64
+            artifact: mac-x64
 
     steps:
       - name: Checkout code
@@ -53,6 +56,14 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+
+      - name: Update npm to latest stable version
+        run: npm install -g npm@latest
+
+      - name: Check Node.js and npm versions
+        run: |
+          echo "Node.js version: $(node --version)"
+          echo "npm version: $(npm --version)"
 
       - name: Setup Python (for native modules)
         uses: actions/setup-python@v4
@@ -92,11 +103,12 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: false
           CSC_LINK: ""
           CSC_KEY_PASSWORD: ""
+          WIN_CSC_LINK: ""
+          WIN_CSC_KEY_PASSWORD: ""
           APPLE_ID: ""
           APPLE_ID_PASSWORD: ""
           APPLE_TEAM_ID: ""
-        run: |
-          npm run build:automated
+        run: npm run build:automated
 
       - name: List build artifacts
         run: |
