@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
 const path = require('path');
 const AutoSaveManager = require('./auto-save-manager');
 const FileSystemManager = require('./filesystem-manager');
@@ -7,21 +7,27 @@ const StartupOptimizer = require('./startup-optimizer');
 
 const isDev = process.argv.includes('--dev');
 
-const { autoUpdater } = require('electron-updater');
-console.log(autoUpdater)
-
+// Import electron-updater only if not in development mode
+let autoUpdater;
+if (!isDev) {
+  autoUpdater = require('electron-updater').autoUpdater;
+  console.log('Auto-updater initialized');
+} else {
+  console.log('Auto-updater disabled in development mode');
+}
 
 const log = require('electron-log');
-
 
 class AutoUpdateManager {
   constructor(mainWindow) {
     this.mainWindow = mainWindow;
     this.updateAvailable = false;
     this.updateDownloaded = false;
-    this.setupLogging();
-    this.configureUpdater();
-    this.setupEventHandlers();
+    if (!isDev) {
+      this.setupLogging();
+      this.configureUpdater();
+      this.setupEventHandlers();
+    }
   }
 
   setupLogging() {
@@ -96,7 +102,7 @@ class AutoUpdateManager {
     try {
       log.info('Checking for updates...');
       
-      if (process.env.NODE_ENV === 'development') {
+      if (isDev) {
         log.info('Skipping update check in development mode');
         if (showNoUpdateDialog) {
           this.showNoUpdateDialog();
@@ -344,7 +350,10 @@ class ElectronApp {
     });
 
     // Initialize auto-updater
-   // this.initializeAutoUpdater();
+    if (!isDev) {
+      this.autoUpdateManager = new AutoUpdateManager(this.mainWindow);
+      this.autoUpdateManager.scheduleUpdateChecks();
+    }
   }
 
   setupMenu() {
@@ -1102,17 +1111,13 @@ class ElectronApp {
               size: file.size,
               modified: file.modified,
               preloaded: true,
-              preloadedMetadata: preloadedMeta,
-              formattedSize: this.formatFileSize(file.size),
-              formattedDate: this.formatDate(file.modified)
             });
           }
         }
-        
+
         return {
           success: true,
           preloadedSaves: preloadedSaves,
-          totalPreloaded: preloadedSaves.length,
           message: 'Preloaded saves retrieved successfully'
         };
       } catch (error) {
@@ -1127,390 +1132,134 @@ class ElectronApp {
       }
     });
 
-    // Clear startup caches handler
-    ipcMain.handle('clear-startup-caches', async (event) => {
-      try {
-        if (!this.startupOptimizer) {
-          return {
-            success: false,
-            error: 'Startup optimizer not initialized',
-            message: 'Startup optimizer is not available'
-          };
-        }
+    // Setup auto-save event forwarding to renderer
+    this.setupAutoSaveEventForwarding();
 
-        this.startupOptimizer.clearCaches();
-        
-        return {
-          success: true,
-          message: 'Startup caches cleared successfully'
-        };
-      } catch (error) {
-        console.error('Clear startup caches failed:', error.message);
-        
-        return {
-          success: false,
-          error: error.message,
-          message: 'Failed to clear startup caches'
-        };
-      }
-    });
+    // Auto-updater handlers
+    this.setupAutoUpdaterHandlers();
 
-    // Update startup optimization configuration handler
-    ipcMain.handle('update-startup-config', async (event, config) => {
-      try {
-        if (!this.startupOptimizer) {
-          return {
-            success: false,
-            error: 'Startup optimizer not initialized',
-            message: 'Startup optimizer is not available'
-          };
-        }
-
-        this.startupOptimizer.updateConfiguration(config);
-        
-        return {
-          success: true,
-          message: 'Startup configuration updated successfully'
-        };
-      } catch (error) {
-        console.error('Update startup config failed:', error.message);
-        
-        return {
-          success: false,
-          error: error.message,
-          message: 'Failed to update startup configuration'
-        };
-      }
-    });
-
-    console.log('Startup optimization IPC handlers configured');
+    console.log('IPC handlers configured successfully');
   }
 
   /**
-   * Setup IPC handlers for auto-updater functionality
+   * Setup IPC handlers for auto-updater features
    */
   setupAutoUpdaterHandlers() {
-    // Check for updates manually
-    ipcMain.handle('check-for-updates', async (event) => {
-      try {
-        if (!this.autoUpdateManager) {
-          return {
-            success: false,
-            error: 'Auto-updater not initialized',
-            message: 'Auto-updater is not available'
-          };
-        }
+    if (!isDev && this.autoUpdateManager) {
+      // Check for updates handler
+      ipcMain.handle('check-for-updates', async (event) => {
+        return this.autoUpdateManager.checkForUpdates(true);
+      });
 
-        await this.autoUpdateManager.checkForUpdates(true);
-        
-        return {
-          success: true,
-          message: 'Update check completed'
-        };
-      } catch (error) {
-        console.error('Manual update check failed:', error.message);
-        
-        return {
-          success: false,
-          error: error.message,
-          message: 'Failed to check for updates'
-        };
-      }
-    });
+      // Download update handler
+      ipcMain.handle('download-update', async (event) => {
+        return this.autoUpdateManager.downloadUpdate();
+      });
 
-    // Get update status
-    ipcMain.handle('get-update-status', async (event) => {
-      try {
-        if (!this.autoUpdateManager) {
-          return {
-            success: false,
-            error: 'Auto-updater not initialized',
-            status: { updateAvailable: false, updateDownloaded: false, currentVersion: app.getVersion() }
-          };
-        }
-
-        const status = this.autoUpdateManager.getUpdateStatus();
-        
-        return {
-          success: true,
-          status: status,
-          message: 'Update status retrieved successfully'
-        };
-      } catch (error) {
-        console.error('Get update status failed:', error.message);
-        
-        return {
-          success: false,
-          error: error.message,
-          status: { updateAvailable: false, updateDownloaded: false, currentVersion: app.getVersion() },
-          message: 'Failed to get update status'
-        };
-      }
-    });
-
-    // Download update
-    ipcMain.handle('download-update', async (event) => {
-      try {
-        if (!this.autoUpdateManager) {
-          return {
-            success: false,
-            error: 'Auto-updater not initialized',
-            message: 'Auto-updater is not available'
-          };
-        }
-
-        await this.autoUpdateManager.downloadUpdate();
-        
-        return {
-          success: true,
-          message: 'Update download started'
-        };
-      } catch (error) {
-        console.error('Download update failed:', error.message);
-        
-        return {
-          success: false,
-          error: error.message,
-          message: 'Failed to download update'
-        };
-      }
-    });
-
-    // Install update
-    ipcMain.handle('install-update', async (event) => {
-      try {
-        if (!this.autoUpdateManager) {
-          return {
-            success: false,
-            error: 'Auto-updater not initialized',
-            message: 'Auto-updater is not available'
-          };
-        }
-
+      // Install update handler
+      ipcMain.handle('install-update', async (event) => {
         this.autoUpdateManager.installUpdate();
-        
-        return {
-          success: true,
-          message: 'Update installation started - app will restart'
-        };
-      } catch (error) {
-        console.error('Install update failed:', error.message);
-        
-        return {
-          success: false,
-          error: error.message,
-          message: 'Failed to install update'
-        };
-      }
-    });
+        return { success: true };
+      });
 
-    console.log('Auto-updater IPC handlers configured');
+      // Get update status handler
+      ipcMain.handle('get-update-status', async (event) => {
+        return this.autoUpdateManager.getUpdateStatus();
+      });
+    }
   }
 
   /**
-   * Setup event forwarding from auto-save manager to renderer process
+   * Setup event forwarding for auto-save events
    */
   setupAutoSaveEventForwarding() {
-    if (!this.autoSaveManager) return;
-
-    // Forward auto-save events to renderer
-    this.autoSaveManager.on('save-success', (data) => {
-      this.mainWindow?.webContents.send('auto-save-event', {
-        type: 'save-success',
-        data: data
+    if (this.autoSaveManager) {
+      this.autoSaveManager.on('save-started', (info) => {
+        this.mainWindow?.webContents.send('auto-save-status', {
+          type: 'save-started',
+          ...info
+        });
       });
-    });
 
-    this.autoSaveManager.on('save-failed', (data) => {
-      this.mainWindow?.webContents.send('auto-save-event', {
-        type: 'save-failed',
-        data: data
+      this.autoSaveManager.on('save-completed', (info) => {
+        this.mainWindow?.webContents.send('auto-save-status', {
+          type: 'save-completed',
+          ...info
+        });
       });
-    });
 
-    this.autoSaveManager.on('save-retry', (data) => {
-      this.mainWindow?.webContents.send('auto-save-event', {
-        type: 'save-retry',
-        data: data
+      this.autoSaveManager.on('save-error', (error) => {
+        this.mainWindow?.webContents.send('auto-save-status', {
+          type: 'save-error',
+          error: error.message
+        });
       });
-    });
-
-    this.autoSaveManager.on('backup-created', (data) => {
-      this.mainWindow?.webContents.send('auto-save-event', {
-        type: 'backup-created',
-        data: data
-      });
-    });
-
-    this.autoSaveManager.on('backup-cleanup', (data) => {
-      this.mainWindow?.webContents.send('auto-save-event', {
-        type: 'backup-cleanup',
-        data: data
-      });
-    });
-
-    this.autoSaveManager.on('auto-save-error', (data) => {
-      this.mainWindow?.webContents.send('auto-save-event', {
-        type: 'auto-save-error',
-        data: data
-      });
-    });
-  }
-
-  /**
-   * Validates game state structure
-   * @param {Object} gameState - Game state to validate
-   * @throws {Error} If validation fails
-   */
-  validateGameState(gameState) {
-    if (!gameState || typeof gameState !== 'object') {
-      throw new Error('Game state must be a valid object');
-    }
-
-    // Check for required top-level properties
-    const requiredProps = ['player', 'script', 'server', 'battery'];
-    for (const prop of requiredProps) {
-      if (!gameState.hasOwnProperty(prop)) {
-        throw new Error(`Game state missing required property: ${prop}`);
-      }
-    }
-
-    // Validate player object
-    if (!gameState.player || typeof gameState.player !== 'object') {
-      throw new Error('Game state player must be a valid object');
-    }
-
-    // Validate critical player properties
-    const playerProps = ['username', 'money', 'exp', 'level'];
-    for (const prop of playerProps) {
-      if (!gameState.player.hasOwnProperty(prop)) {
-        throw new Error(`Player object missing required property: ${prop}`);
-      }
     }
   }
 
   /**
-   * Formats save file display name
-   * @param {string} filename - Original filename
-   * @returns {string} Formatted display name
-   */
-  formatSaveDisplayName(filename) {
-    // Remove file extension and format timestamp
-    const nameWithoutExt = filename.replace('.json', '');
-    const parts = nameWithoutExt.split('_');
-    
-    if (parts.length >= 2) {
-      const saveType = parts[0];
-      const timestamp = parts.slice(1).join('_');
-      
-      try {
-        const date = new Date(timestamp.replace(/-/g, ':'));
-        return `${saveType.charAt(0).toUpperCase() + saveType.slice(1)} - ${this.formatDate(date)}`;
-      } catch (error) {
-        return nameWithoutExt;
-      }
-    }
-    
-    return nameWithoutExt;
-  }
-
-  /**
-   * Formats backup file display name
-   * @param {string} filename - Original filename
-   * @returns {string} Formatted display name
-   */
-  formatBackupDisplayName(filename) {
-    const nameWithoutExt = filename.replace('.json', '');
-    
-    if (nameWithoutExt.includes('backup_manual_')) {
-      const parts = nameWithoutExt.split('_');
-      const customName = parts.slice(2, -1).join('_');
-      return `Manual Backup${customName ? ` - ${customName}` : ''}`;
-    } else if (nameWithoutExt.startsWith('backup_')) {
-      return 'Auto Backup';
-    }
-    
-    return nameWithoutExt;
-  }
-
-  /**
-   * Formats file size for display
-   * @param {number} bytes - File size in bytes
-   * @returns {string} Formatted size string
-   */
-  formatFileSize(bytes) {
-    if (bytes === 0) return '0 B';
-    
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
-
-  /**
-   * Formats date for display
-   * @param {Date} date - Date to format
-   * @returns {string} Formatted date string
-   */
-  formatDate(date) {
-    if (!(date instanceof Date)) {
-      date = new Date(date);
-    }
-    
-    return date.toLocaleString();
-  }
-
-  /**
-   * Initialize auto-updater system
-   */
-  initializeAutoUpdater() {
-    try {
-      if (!this.mainWindow) {
-        console.warn('Cannot initialize auto-updater: main window not available');
-        return;
-      }
-
-      // Initialize auto-updater
-   //   this.autoUpdateManager = new AutoUpdateManager(this.mainWindow);
-      
-      // Schedule automatic update checks
-  //    this.autoUpdateManager.scheduleUpdateChecks();
-      
-      console.log('Auto-updater initialized successfully');
-    } catch (error) {
-      console.error('Failed to initialize auto-updater:', error.message);
-      // Don't throw error - auto-updater is not critical for app functionality
-    }
-  }
-
-  /**
-   * Check migration status on startup and notify renderer if needed
+   * Check migration status on startup
    */
   async checkMigrationOnStartup() {
     try {
-      // Wait a moment for the window to be fully loaded
-      setTimeout(async () => {
-        const migrationCompleted = await this.migrationManager.isMigrationCompleted();
-        
-        if (!migrationCompleted) {
-          console.log('Migration not completed, renderer will check for localStorage data');
-          
-          // Send migration prompt to renderer - it will handle localStorage detection
-          this.mainWindow?.webContents.send('migration-prompt', {
-            type: 'startup-check',
-            migrationCompleted: false,
-            message: 'Check for localStorage data to migrate'
-          });
-        } else {
-          console.log('Migration already completed');
-        }
-      }, 3000); // Wait 3 seconds for the game to load
+      const migrationCompleted = await this.migrationManager.isMigrationCompleted();
+      
+      if (!migrationCompleted) {
+        // Notify renderer that migration is needed
+        this.mainWindow?.webContents.send('migration-status', {
+          type: 'migration-needed',
+          migrationCompleted: false
+        });
+      }
     } catch (error) {
-      console.error('Error checking migration on startup:', error);
+      console.error('Migration check on startup failed:', error.message);
     }
+  }
+
+  /**
+   * Format save display name
+   */
+  formatSaveDisplayName(filename) {
+    // Remove timestamp and extension for display
+    return filename.replace(/^\d+_/, '').replace(/.json$/, '');
+  }
+
+  /**
+   * Format backup display name
+   */
+  formatBackupDisplayName(filename) {
+    // Remove backup prefix and extension for display
+    return filename.replace(/^backup_/, '').replace(/.json$/, '');
+  }
+
+  /**
+   * Format file size for display
+   */
+  formatFileSize(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  }
+
+  /**
+   * Format date for display
+   */
+  formatDate(timestamp) {
+    return new Date(timestamp).toLocaleString();
+  }
+
+  /**
+   * Validate game state structure
+   */
+  validateGameState(gameState) {
+    if (!gameState || typeof gameState !== 'object') {
+      throw new Error('Invalid game state: must be an object');
+    }
+
+    // Add more validation as needed
+    return true;
   }
 }
 
-// Create the Electron app instance
+// Start the application
 new ElectronApp();
