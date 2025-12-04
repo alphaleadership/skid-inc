@@ -54,6 +54,7 @@ function generateLatestYaml(files) {
 async function main() {
   try {
     // Liste des fichiers à inclure dans latest.yml
+    console.log(fs.readdirSync("./release-assets"))
     const files = [
       { name: 'Windows Installer', path: './dist/win-unpacked/Skid-Inc-Setup-${version}.exe' },
       { name: 'Windows Portable', path: './dist/win-unpacked/Skid-Inc-${version}-win.exe' },
