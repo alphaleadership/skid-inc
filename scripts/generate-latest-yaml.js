@@ -56,12 +56,12 @@ async function main() {
     // Liste des fichiers à inclure dans latest.yml
     console.log(fs.readdirSync("./release-assets"))
     const files = [
-      { name: 'Windows Installer', path: './dist/win-unpacked/Skid-Inc-Setup-${version}.exe' },
-      { name: 'Windows Portable', path: './dist/win-unpacked/Skid-Inc-${version}-win.exe' },
+      { name: 'Windows Installer', path: './release-assets/Skid-Inc Setup ${version}.exe' },
+      { name: 'Windows Portable', path: './release-assets/Skid-Inc ${version}.exe' },
   
-      { name: 'Linux AppImage', path: './dist/linux-unpacked/Skid-Inc-${version}.AppImage' },
-      { name: 'Linux DEB', path: './dist/skid-inc_${version}_amd64.deb' },
-      { name: 'Linux RPM', path: './dist/skid-inc-${version}.x86_64.rpm' },
+      { name: 'Linux AppImage', path: './release-assets/Skid-Inc-${version}.AppImage' },
+      { name: 'Linux DEB', path: './release-assetsskid-inc_${version}_amd64.deb' },
+      { name: 'Linux RPM', path: './release-assetsskid-inc-${version}.x86_64.rpm' },
     ];
 
     // Génère le contenu du fichier latest.yml
