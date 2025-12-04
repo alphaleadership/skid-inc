@@ -17,7 +17,7 @@ on:
         default: false
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '24'
   ELECTRON_CACHE: ${{ github.workspace }}/.cache/electron
   ELECTRON_BUILDER_CACHE: ${{ github.workspace }}/.cache/electron-builder
   # Désactive la signature automatique pour tous les OS
