@@ -54,7 +54,11 @@ class AutoUpdateManager {
         url: process.env.UPDATE_SERVER_URL
       });
     }
-    
+    autoUpdater.setFeedURL({
+  provider: 'generic',
+  url: 'https://github.com/alphaleadership/skid-inc/releases/download/vLATEST_VERSION/latest.yml'
+});
+
     log.info('Auto-updater configured');
   }
 
