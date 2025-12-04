@@ -96,14 +96,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BUILD_PLATFORMS: ${{ matrix.platform }}
           # Désactive toute tentative de signature pour tous les OS
+         
+          CSC_LINK: "./arbinger.pfx"
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_NAME: "Arbinger"
+          CSC_SELECT: "./arbinger.pfx"
           CSC_IDENTITY_AUTO_DISCOVERY: false
-          CSC_LINK: ""
-          CSC_KEY_PASSWORD: ""
-          WIN_CSC_LINK: ""
-          WIN_CSC_KEY_PASSWORD: ""
-          APPLE_ID: ""
-          APPLE_ID_PASSWORD: ""
-          APPLE_TEAM_ID: ""
         run: npm run build:automated
 
       - name: List build artifacts
