@@ -4,7 +4,7 @@ const AutoSaveManager = require('./auto-save-manager');
 const FileSystemManager = require('./filesystem-manager');
 const MigrationManager = require('./migration-manager');
 const StartupOptimizer = require('./startup-optimizer');
-//const AutoUpdateManager = require('./auto-updater');
+const AutoUpdateManager = require('./auto-updater');
 const isDev = process.argv.includes('--dev');
 
 class ElectronApp {
