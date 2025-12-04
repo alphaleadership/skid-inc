@@ -43,7 +43,7 @@ function generateLatestYaml(files,body) {
 
 
   yamlContent += `releaseName: Skid-Inc ${tag}\n`;
-  yamlContent += `releaseNotes: " ${body}"\n`;
+  yamlContent += `releaseNotes: " https://github.com/alphaleadership/skid-inc/releases/tag/${tag}"\n`;
   yamlContent += `releaseDate: ${new Date().toISOString()}\n`;
 
   return yamlContent;
