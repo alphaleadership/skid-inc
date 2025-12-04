@@ -49,8 +49,8 @@
     "productName": "Skid-Inc",
     "copyright": "Copyright © 2025 TotomInc",
     "compression": "store",
-    "nodeGypRebuild": false,
-    "buildDependenciesFromSource": false,
+    "nodeGypRebuild": true,
+    "buildDependenciesFromSource": true,
     "detectUpdateChannel": false,
     "electronDownload": {
       "cache": "electron-cache"
