@@ -261,6 +261,10 @@ jobs:
           echo "Release ${{ steps.version.outputs.version }} created successfully"
           echo "Assets uploaded:"
           ls -la release-assets/
+      - name: Generate and upload latest.yml
+        run: npm run generate-latest-yaml
+        env:
+             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   notify:
     name: Notify Build Status
