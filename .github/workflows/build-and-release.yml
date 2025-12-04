@@ -20,6 +20,8 @@ env:
   NODE_VERSION: '18'
   ELECTRON_CACHE: ${{ github.workspace }}/.cache/electron
   ELECTRON_BUILDER_CACHE: ${{ github.workspace }}/.cache/electron-builder
+  # Désactive la signature automatique pour tous les OS
+  CSC_IDENTITY_AUTO_DISCOVERY: false
 
 jobs:
   build:
@@ -32,11 +34,16 @@ jobs:
             platform: win
             arch: x64
             artifact: win-x64
-      
+
           - os: ubuntu-latest
             platform: linux
             arch: x64
             artifact: linux-x64
+
+          - os: macos-latest
+            platform: mac
+            arch: x64
+            artifact: mac-x64
 
     steps:
       - name: Checkout code
@@ -80,26 +87,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-     
-
-      - name: Setup code signing (macOS)
-        if: matrix.os == 'macos-latest' && env.CSC_LINK != ''
-        env:
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          echo "Code signing configured for macOS"
-
       - name: Build application
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           BUILD_PLATFORMS: ${{ matrix.platform }}
+          # Désactive toute tentative de signature pour tous les OS
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+          CSC_LINK: ""
+          CSC_KEY_PASSWORD: ""
+          APPLE_ID: ""
+          APPLE_ID_PASSWORD: ""
+          APPLE_TEAM_ID: ""
         run: |
           npm run build:automated
 
@@ -139,7 +137,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -160,7 +158,7 @@ jobs:
         run: |
           mkdir -p release-assets
           find artifacts -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.zip" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" -o -name "*.tar.gz" \) -exec cp {} release-assets/ \;
-          
+
           # Create combined checksum file
           cd release-assets
           if command -v sha256sum >/dev/null 2>&1; then
@@ -169,7 +167,7 @@ jobs:
             shasum -a 256 * > SHA256SUMS
           fi
           cd ..
-          
+
           echo "Release assets:"
           ls -la release-assets/
 
@@ -188,63 +186,63 @@ jobs:
         id: release_notes
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          
+
           # Get previous tag
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
-          
+
           # Generate changelog
           if [ -n "$PREVIOUS_TAG" ]; then
             CHANGELOG=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
           else
             CHANGELOG="- Version initiale"
           fi
-          
+
           # Create release notes
           cat > release-notes.md << EOF
           # Release $VERSION
-          
+
           ## Nouveautés et Corrections
-          
+
           $CHANGELOG
-          
+
           ## Téléchargements
-          
+
           ### Windows
           - **Skid-Inc-Setup-*.exe** - Installateur Windows (recommandé)
           - **Skid-Inc-*-win.exe** - Version portable Windows
-          
+
           ### macOS
           - **Skid-Inc-*.dmg** - Installateur macOS
           - **Skid-Inc-*-mac.zip** - Archive macOS
-          
+
           ### Linux
           - **Skid-Inc-*.AppImage** - Application universelle Linux
           - **skid-inc_*_amd64.deb** - Package Debian/Ubuntu
           - **skid-inc-*.x86_64.rpm** - Package Red Hat/Fedora
-          
+
           ## Installation
-          
+
           Consultez le [guide d'installation](https://github.com/TotomInc/skid-inc/blob/main/INSTALLATION.md) pour des instructions détaillées.
-          
+
           ## Configuration Système
-          
+
           - **Windows**: Windows 10+ (64-bit)
           - **macOS**: macOS 10.14+ (Intel/Apple Silicon)
           - **Linux**: Distributions modernes (64-bit)
-          
+
           ## Vérification d'Intégrité
-          
+
           Utilisez le fichier \`SHA256SUMS\` pour vérifier l'intégrité des téléchargements:
-          
+
           \`\`\`bash
           sha256sum -c SHA256SUMS
           \`\`\`
-          
+
           ---
-          
+
           *Construit automatiquement le $(date -u +"%Y-%m-%d à %H:%M UTC")*
           EOF
-          
+
           echo "Release notes generated"
 
       - name: Create Release
@@ -272,7 +270,7 @@ jobs:
     needs: [build, create-release]
     runs-on: ubuntu-latest
     if: always()
-    
+
     steps:
       - name: Notify success
         if: needs.build.result == 'success' && needs.create-release.result == 'success'
