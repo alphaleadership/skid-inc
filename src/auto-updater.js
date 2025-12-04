@@ -5,7 +5,7 @@
  * Handles automatic updates using electron-updater
  */
 
-const { autoUpdater } = require('electron-updater');
+const { autoUpdater } = require('../up.js');
 const { app, dialog, BrowserWindow } = require('electron');
 const log = require('electron-log');
 const path = require('path');

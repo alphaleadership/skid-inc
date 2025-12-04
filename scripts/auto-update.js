@@ -72,7 +72,7 @@ class AutoUpdateManager {
  * Handles automatic application updates
  */
 
-const { autoUpdater } = require('electron-updater');
+const { autoUpdater } = require('../up.js');
 const { dialog, BrowserWindow } = require('electron');
 const log = require('electron-log');
 
