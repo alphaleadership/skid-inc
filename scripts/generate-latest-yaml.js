@@ -32,10 +32,10 @@ function generateLatestYaml(files,body) {
   let yamlContent = `version: ${tag}\nfiles:\n`;
 
   files.forEach(file => {
-    if (fs.existsSync(file.path)) {
-      const sha256 = calculateSha256(file.path);
-      const size = getFileSize(file.path);
-      yamlContent += `  - url: https://github.com/alphaleadership/skid-inc/releases/download/${tag}/${path.basename(file.path)}\n`;
+    if (fs.existsSync(file.path.replace("${version}",version))) {
+      const sha256 = calculateSha256(file.path.replace("${version}",version));
+      const size = getFileSize(file.path.replace("${version}",version));
+      yamlContent += `  - url: https://github.com/alphaleadership/skid-inc/releases/download/${tag}/${path.basename(file.path.replace("${version}",version))}\n`;
       yamlContent += `    sha256: ${sha256}\n`;
       yamlContent += `    size: ${size}\n`;
     }
