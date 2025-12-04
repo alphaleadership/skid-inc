@@ -55,8 +55,8 @@ async function main() {
     // Liste des fichiers à inclure dans latest.yml
     console.log(fs.readdirSync("./release-assets"))
     const files = [
-      { name: 'Windows Installer', path: './release-assets/Skid-Inc Setup ${version}.exe' },
-      { name: 'Windows Portable', path: './release-assets/Skid-Inc ${version}.exe' },
+      { name: 'Windows Installer', path: './release-assets/Skid-Inc-Setup.${version}.exe' },
+      { name: 'Windows Portable', path: './release-assets/Skid-Inc.${version}.exe' },
   
       { name: 'Linux AppImage', path: './release-assets/Skid-Inc-${version}.AppImage' },
       { name: 'Linux DEB', path: './release-assetsskid-inc_${version}_amd64.deb' },
