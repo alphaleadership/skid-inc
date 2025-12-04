@@ -12,7 +12,7 @@ console.log(autoUpdater)
 
 
 const log = require('electron-log');
-const path = require('path');
+
 
 class AutoUpdateManager {
   constructor(mainWindow) {
