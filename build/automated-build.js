@@ -80,20 +80,7 @@ class AutomatedBuilder {
     this.log(`Node.js version: ${nodeVersion}`);
     
     // Check npm version
-    try {
-      const npmVersion = await this.executeCommand('npm --version');
-      this.log(`npm version: ${npmVersion.trim()}`);
-    } catch (error) {
-      throw new Error('npm not found. Please install Node.js and npm.');
-    }
-
-    // Check electron-builder
-    try {
-      await this.executeCommand('npx electron-builder --version');
-      this.log('electron-builder is available');
-    } catch (error) {
-      throw new Error('electron-builder not found. Run npm install first.');
-    }
+ 
 
     // Check Git (for build metadata)
     try {
