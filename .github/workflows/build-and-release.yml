@@ -104,11 +104,7 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: false
         run: npm run build:automated
 
-      - name: List build artifacts
-        run: |
-          echo "Build artifacts:"
-          ls -la dist/ || echo "No dist directory found"
-
+   
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
