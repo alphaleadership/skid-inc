@@ -10,7 +10,7 @@ const isDev = process.argv.includes('--dev');
 const { autoUpdater } = require('electron-updater');
 console.log(autoUpdater)
 
-const { app, dialog, BrowserWindow } = require('electron');
+
 const log = require('electron-log');
 const path = require('path');
 
