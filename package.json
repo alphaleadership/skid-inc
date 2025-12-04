@@ -15,7 +15,7 @@
     "electron-builder": "^24.9.1"
   },
   "scripts": {
-    "generate-latest-yaml": "node scripts/generate-latest-yaml.js",
+    "generate-latest-yaml": "node scripts/generate-latest-yaml.js","test":"echo down",
     "start": "http-server .",
     "electron": "electron .",
     "electron-dev": "electron . --dev",
