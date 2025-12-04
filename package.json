@@ -1,9 +1,9 @@
 {
   "name": "skid-inc",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "Idle-game with hacking theme.",
   "main": "src/main.js",
-"private":true ,
+  "private": true,
   "dependencies": {
     "@octokit/rest": "^22.0.1",
     "electron-log": "^5.0.1",
@@ -15,7 +15,8 @@
     "electron-builder": "^24.9.1"
   },
   "scripts": {
-    "generate-latest-yaml": "node scripts/generate-latest-yaml.js","test":"echo down",
+    "generate-latest-yaml": "node scripts/generate-latest-yaml.js",
+    "test": "echo down",
     "start": "http-server .",
     "electron": "electron .",
     "electron-dev": "electron . --dev",
