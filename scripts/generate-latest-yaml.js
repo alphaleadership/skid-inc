@@ -28,7 +28,7 @@ function getFileSize(filePath) {
 }
 
 // Génère le contenu du fichier latest.yml
-function generateLatestYaml(files) {
+function generateLatestYaml(files,body) {
   let yamlContent = `version: ${tag}\nfiles:\n`;
 
   files.forEach(file => {
@@ -41,10 +41,9 @@ function generateLatestYaml(files) {
     }
   });
 
-  yamlContent += `path: Skid-Inc-Setup-${version}.exe\n`;
-  yamlContent += `sha256: ${calculateSha256('./dist/win-unpacked/Skid-Inc-Setup-${version}.exe')}\n`;
+
   yamlContent += `releaseName: Skid-Inc ${tag}\n`;
-  yamlContent += `releaseNotes: "Automatically generated release for version ${version}"\n`;
+  yamlContent += `releaseNotes: " ${body}"\n`;
   yamlContent += `releaseDate: ${new Date().toISOString()}\n`;
 
   return yamlContent;
@@ -65,11 +64,7 @@ async function main() {
     ];
 
     // Génère le contenu du fichier latest.yml
-    const latestYamlContent = generateLatestYaml(files);
-
-    // Écrit le fichier latest.yml
-    fs.writeFileSync('./latest.yml', latestYamlContent);
-    console.log('Fichier latest.yml généré avec succès !');
+  
 
     // Récupère l'ID de la release
     const release = await octokit.rest.repos.getReleaseByTag({
@@ -77,7 +72,12 @@ async function main() {
       repo: 'skid-inc',
       tag: tag,
     });
+    console.log('Release trouvée :', release.data);
+      const latestYamlContent = generateLatestYaml(files,release.data.body);
 
+    // Écrit le fichier latest.yml
+    fs.writeFileSync('./latest.yml', latestYamlContent);
+    console.log('Fichier latest.yml généré avec succès !');
     // Upload le fichier latest.yml à la release
     await octokit.rest.repos.uploadReleaseAsset({
       owner: 'alphaleadership',
