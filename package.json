@@ -3,6 +3,7 @@
   "version": "0.0.15",
   "description": "Idle-game with hacking theme.",
   "main": "src/main.js",
+"private":true ,
   "dependencies": {
     "@octokit/rest": "^22.0.1",
     "electron-log": "^5.0.1",
