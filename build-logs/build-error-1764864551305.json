@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-12-04T16:09:11.304Z",
+  "error": {
+    "name": "Error",
+    "message": "EPERM, Permission denied: \\\\?\\D:\\skid-inc\\dist '\\\\?\\D:\\skid-inc\\dist'",
+    "stack": "Error: EPERM, Permission denied: \\\\?\\D:\\skid-inc\\dist '\\\\?\\D:\\skid-inc\\dist'\n    at Object.rmSync (node:fs:1236:18)\n    at Object.<anonymous> (D:\\skid-inc\\build\\prebuild.js:49:8)\n    at Module._compile (node:internal/modules/cjs/loader:1760:14)\n    at Object..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1480:32)\n    at Module._load (node:internal/modules/cjs/loader:1299:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47",
+    "code": "EPERM"
+  },
+  "context": {
+    "platform": "win32",
+    "arch": "x64",
+    "nodeVersion": "v24.9.0",
+    "memory": {
+      "total": 16944168960,
+      "free": 3516854272
+    },
+    "script": "prebuild.js"
+  }
+}
