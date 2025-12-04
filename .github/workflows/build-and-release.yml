@@ -210,9 +210,7 @@ jobs:
           - **Skid-Inc-Setup-*.exe** - Installateur Windows (recommandé)
           - **Skid-Inc-*-win.exe** - Version portable Windows
 
-          ### macOS
-          - **Skid-Inc-*.dmg** - Installateur macOS
-          - **Skid-Inc-*-mac.zip** - Archive macOS
+
 
           ### Linux
           - **Skid-Inc-*.AppImage** - Application universelle Linux
