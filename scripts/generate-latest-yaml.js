@@ -16,7 +16,7 @@ const octokit = new Octokit({
 // Fonction pour calculer le SHA256 d'un fichier
 function calculateSha256(filePath) {
   if (!fs.existsSync(filePath)) return '';
-  const hash = execSync(`sha256sum ${filePath}`).toString().split(' ')[0];
+  const hash = execSync(`sha256sum "${filePath}"`).toString().split(' ')[0];
   return hash.trim();
 }
 
