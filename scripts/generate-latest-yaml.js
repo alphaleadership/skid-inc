@@ -32,9 +32,9 @@ function generateLatestYaml(files,body) {
   let yamlContent = `version: ${tag}\nfiles:\n`;
 
   files.forEach(file => {
-    if (fs.existsSync(file.path.replace("${version}",version))) {
-      const sha256 = calculateSha256(file.path.replace("${version}",version));
-      const size = getFileSize(file.path.replace("${version}",version));
+    if (fs.existsSync(file.path)) {
+      const sha256 = calculateSha256(file.path);
+      const size = getFileSize(file.path);
       yamlContent += `  - url: https://github.com/alphaleadership/skid-inc/releases/download/${tag}/${path.basename(file.path.replace("${version}",version))}\n`;
       yamlContent += `    sha256: ${sha256}\n`;
       yamlContent += `    size: ${size}\n`;
@@ -54,14 +54,12 @@ async function main() {
   try {
     // Liste des fichiers à inclure dans latest.yml
     console.log(fs.readdirSync("./release-assets"))
-    const files = [
-      { name: 'Windows Installer', path: './release-assets/Skid-Inc-Setup.${version}.exe' },
-      { name: 'Windows Portable', path: './release-assets/Skid-Inc.${version}.exe' },
-  
-      { name: 'Linux AppImage', path: './release-assets/Skid-Inc-${version}.AppImage' },
-      { name: 'Linux DEB', path: './release-assetsskid-inc_${version}_amd64.deb' },
-      { name: 'Linux RPM', path: './release-assetsskid-inc-${version}.x86_64.rpm' },
-    ];
+    const files = fs.readdirSync("./release-assets").map((file)=>{
+      return {
+        path: `./release-assets/${file}`,
+        name: file,
+      }
+    })
 
     // Génère le contenu du fichier latest.yml
   
