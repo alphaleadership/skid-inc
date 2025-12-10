@@ -1,6 +1,6 @@
 {
   "name": "skid-inc",
-  "version": "0.1.2-2",
+  "version": "0.1.2-3",
   "description": "Idle-game with hacking theme.",
   "main": "src/main.js",
   "private": true,
@@ -30,7 +30,7 @@
     "build:linux": "npm run prebuild && electron-builder --linux",
     "build:all": "npm run prebuild && electron-builder --win  --linux",
     "build:dir": "npm run prebuild && electron-builder --dir",
-    "build:automated": "npm run prebuild && electron-builder --x64 ",
+    "build:automated": "npm run prebuild && electron-builder --x64 --publish always ",
     "build:ci": "BUILD_PLATFORMS=current npm run build:automated",
     "build:release": "BUILD_PLATFORMS=all npm run build:automated",
     "deploy": "node build/deploy.js",
@@ -97,7 +97,9 @@
             "x64"
           ]
         }
-      ],
+      ], "publish": [
+        "github"
+      ]
       "publisherName": "TotomInc",
       "verifyUpdateCodeSignature": false,
       "requestedExecutionLevel": "asInvoker"
@@ -163,7 +165,9 @@
             "x64"
           ]
         }
-      ],
+      ], "publish": [
+        "github"
+      ]
       "category": "Game",
       "synopsis": "Idle game with hacking theme",
       "description": "Skid-Inc is an idle game with a hacking theme where you progress through various levels and manage servers.",
