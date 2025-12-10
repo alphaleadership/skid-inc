@@ -91,7 +91,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build application
+      - name: Build/release Electron app
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          # GitHub token, automatically provided to the action
+          # (No need to define this secret in the repo settings)
+          github_token: ${{ secrets.github_token }}
+
+          # If the commit is tagged with a version (e.g. "v1.0.0"),
+          # release the app after building
+          release: ${{ startsWith(github.ref, 'refs/tags/') }}
+        
+          args: "--publish always"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BUILD_PLATFORMS: ${{ matrix.platform }}
@@ -102,7 +113,7 @@ jobs:
           CSC_NAME: "Arbinger"
           CSC_SELECT: "./arbinger.pfx"
           CSC_IDENTITY_AUTO_DISCOVERY: false
-        run: npm run build:automated
+        
 
    
       - name: Upload build artifacts
