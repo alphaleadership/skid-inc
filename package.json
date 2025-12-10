@@ -99,7 +99,7 @@
         }
       ], "publish": [
         "github"
-      ]
+      ],
       "publisherName": "TotomInc",
       "verifyUpdateCodeSignature": false,
       "requestedExecutionLevel": "asInvoker"
@@ -167,7 +167,7 @@
         }
       ], "publish": [
         "github"
-      ]
+      ],
       "category": "Game",
       "synopsis": "Idle game with hacking theme",
       "description": "Skid-Inc is an idle game with a hacking theme where you progress through various levels and manage servers.",
