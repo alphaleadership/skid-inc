@@ -24,8 +24,124 @@ env:
   CSC_IDENTITY_AUTO_DISCOVERY: false
 
 jobs:
-  build:
+   create-release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+   
+
+    
+
+      - name: Get version
+        id: version
+        run: |
+           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+           VERSION="${{ github.event.inputs.version }}"
+           else
+           VERSION=${GITHUB_REF#refs/tags/}
+           # Supprimer le préfixe 'v' s'il est présent
+           VERSION="${VERSION#v}"
+           fi
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+           echo "Version extraite : $VERSION"
+
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          # Get previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+
+          # Generate changelog
+          if [ -n "$PREVIOUS_TAG" ]; then
+            CHANGELOG=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          else
+            CHANGELOG="- Version initiale"
+          fi
+
+          # Create release notes
+          cat > release-notes.md << EOF
+          # Release $VERSION
+
+          ## Nouveautés et Corrections
+
+          $CHANGELOG
+
+          ## Téléchargements
+
+          ### Windows
+          - **Skid-Inc-Setup-*.exe** - Installateur Windows (recommandé)
+          - **Skid-Inc-*-win.exe** - Version portable Windows
+
+
+
+          ### Linux
+          - **Skid-Inc-*.AppImage** - Application universelle Linux
+          - **skid-inc_*_amd64.deb** - Package Debian/Ubuntu
+          - **skid-inc-*.x86_64.rpm** - Package Red Hat/Fedora
+
+          ## Installation
+
+          Consultez le [guide d'installation](https://github.com/TotomInc/skid-inc/blob/main/INSTALLATION.md) pour des instructions détaillées.
+
+          ## Configuration Système
+
+          - **Windows**: Windows 10+ (64-bit)
+          - **macOS**: macOS 10.14+ (Intel/Apple Silicon)
+          - **Linux**: Distributions modernes (64-bit)
+
+          ## Vérification d'Intégrité
+
+          Utilisez le fichier \`SHA256SUMS\` pour vérifier l'intégrité des téléchargements:
+
+          \`\`\`bash
+          sha256sum -c SHA256SUMS
+          \`\`\`
+
+          ---
+
+          *Construit automatiquement le $(date -u +"%Y-%m-%d à %H:%M UTC")*
+          EOF
+
+          echo "Release notes generated"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Skid-Inc ${{ steps.version.outputs.version }}
+          body_path: release-notes.md
+          files: |
+            release-assets/*
+          prerelease: ${{ github.event.inputs.prerelease == 'true' }}
+          draft: false
+          overwrite_files: false
+          make_latest: true
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+     
+     
+
+   build:
     name: Build ${{ matrix.os }}
+    needs: [ create-release]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -142,144 +258,9 @@ jobs:
             build-errors/*.json
           retention-days: 7
 
-  create-release:
-    name: Create Release
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+ 
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Organize artifacts
-        run: |
-          mkdir -p release-assets
-          find artifacts -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.zip" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" -o -name "*.tar.gz" \) -exec cp {} release-assets/ \;
-
-          # Create combined checksum file
-          cd release-assets
-          if command -v sha256sum >/dev/null 2>&1; then
-            sha256sum * > SHA256SUMS
-          else
-            shasum -a 256 * > SHA256SUMS
-          fi
-          cd ..
-
-          echo "Release assets:"
-          ls -la release-assets/
-
-      - name: Get version
-        id: version
-        run: |
-           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-           VERSION="${{ github.event.inputs.version }}"
-           else
-           VERSION=${GITHUB_REF#refs/tags/}
-           # Supprimer le préfixe 'v' s'il est présent
-           VERSION="${VERSION#v}"
-           fi
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-           echo "Version extraite : $VERSION"
-
-
-      - name: Generate release notes
-        id: release_notes
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-
-          # Get previous tag
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
-
-          # Generate changelog
-          if [ -n "$PREVIOUS_TAG" ]; then
-            CHANGELOG=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
-          else
-            CHANGELOG="- Version initiale"
-          fi
-
-          # Create release notes
-          cat > release-notes.md << EOF
-          # Release $VERSION
-
-          ## Nouveautés et Corrections
-
-          $CHANGELOG
-
-          ## Téléchargements
-
-          ### Windows
-          - **Skid-Inc-Setup-*.exe** - Installateur Windows (recommandé)
-          - **Skid-Inc-*-win.exe** - Version portable Windows
-
-
-
-          ### Linux
-          - **Skid-Inc-*.AppImage** - Application universelle Linux
-          - **skid-inc_*_amd64.deb** - Package Debian/Ubuntu
-          - **skid-inc-*.x86_64.rpm** - Package Red Hat/Fedora
-
-          ## Installation
-
-          Consultez le [guide d'installation](https://github.com/TotomInc/skid-inc/blob/main/INSTALLATION.md) pour des instructions détaillées.
-
-          ## Configuration Système
-
-          - **Windows**: Windows 10+ (64-bit)
-          - **macOS**: macOS 10.14+ (Intel/Apple Silicon)
-          - **Linux**: Distributions modernes (64-bit)
-
-          ## Vérification d'Intégrité
-
-          Utilisez le fichier \`SHA256SUMS\` pour vérifier l'intégrité des téléchargements:
-
-          \`\`\`bash
-          sha256sum -c SHA256SUMS
-          \`\`\`
-
-          ---
-
-          *Construit automatiquement le $(date -u +"%Y-%m-%d à %H:%M UTC")*
-          EOF
-
-          echo "Release notes generated"
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.version.outputs.version }}
-          name: Skid-Inc ${{ steps.version.outputs.version }}
-          body_path: release-notes.md
-          files: |
-            release-assets/*
-          prerelease: ${{ github.event.inputs.prerelease == 'true' }}
-          draft: false
-          overwrite_files: false
-          make_latest: true
-          generate_release_notes: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update latest release info
-        run: |
-          echo "Release ${{ steps.version.outputs.version }} created successfully"
-          echo "Assets uploaded:"
-          ls -la release-assets/
-     
-
-  notify:
+   notify:
     name: Notify Build Status
     needs: [build, create-release]
     runs-on: ubuntu-latest
