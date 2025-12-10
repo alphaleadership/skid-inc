@@ -184,13 +184,16 @@ jobs:
       - name: Get version
         id: version
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION="${{ github.event.inputs.version }}"
-          else
-            VERSION=${GITHUB_REF#refs/tags/}
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Version: $VERSION"
+           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+           VERSION="${{ github.event.inputs.version }}"
+           else
+           VERSION=${GITHUB_REF#refs/tags/}
+           # Supprimer le préfixe 'v' s'il est présent
+           VERSION="${VERSION#v}"
+           fi
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+           echo "Version extraite : $VERSION"
+
 
       - name: Generate release notes
         id: release_notes
