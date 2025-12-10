@@ -77,13 +77,13 @@ async function main() {
     fs.writeFileSync('./latest.yml', latestYamlContent);
     console.log('Fichier latest.yml généré avec succès !');
     // Upload le fichier latest.yml à la release
-    await octokit.rest.repos.uploadReleaseAsset({
+  /*  await octokit.rest.repos.uploadReleaseAsset({
       owner: 'alphaleadership',
       repo: 'skid-inc',
       release_id: release.data.id,
       name: 'latest.yml',
       data: fs.readFileSync('./latest.yml'),
-    });
+    });*/
 
     console.log('Fichier latest.yml ajouté à la release avec succès !');
   } catch (error) {
