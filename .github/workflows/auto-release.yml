@@ -54,7 +54,7 @@ jobs:
             echo "Current version: $CURRENT_VERSION"
             
             # For manual dispatch, we'll use the current version
-            echo "version=v$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           else
             # Check if package.json version changed
             CURRENT_VERSION=$(node -p "require('./package.json').version")
@@ -72,7 +72,7 @@ jobs:
             if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
               echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
               echo "changed=true" >> $GITHUB_OUTPUT
-              echo "version=v$CURRENT_VERSION" >> $GITHUB_OUTPUT
+              echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
               echo "should_release=true" >> $GITHUB_OUTPUT
             else
               echo "Version unchanged"
