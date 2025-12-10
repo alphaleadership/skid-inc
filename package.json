@@ -1,6 +1,6 @@
 {
   "name": "skid-inc",
-  "version": "0.1.2-6",
+  "version": "0.1.2-7",
   "description": "Idle-game with hacking theme.",
   "main": "src/main.js",
   "private": true,
@@ -21,7 +21,7 @@
     "electron": "electron .",
     "electron-dev": "electron . --dev",
     "prebuild": "node build/prebuild.js  ",
-    "build": "npm run prebuild && electron-builder --win --linux --x64 --publish always",
+    "build": "npm run prebuild && electron-builder  --x64 --publish always",
     "build:win": "npm run prebuild && electron-builder --win",
     "build:win-nsis": "node scripts/build-nsis.js",
     "build:debug": "node scripts/debug-build.js",
