@@ -1,6 +1,6 @@
 {
   "name": "skid-inc",
-  "version": "0.1.2-8",
+  "version": "0.1.2-9",
   "description": "Idle-game with hacking theme.",
   "main": "src/main.js",
   "private": true,
