@@ -129,9 +129,7 @@ jobs:
           files: |
             release-assets/*
           prerelease: ${{ github.event.inputs.prerelease == 'true' }}
-          draft: false
-          overwrite_files: false
-          make_latest: true
+          draft: true
           generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
