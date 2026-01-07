@@ -1,6 +1,6 @@
 skidinc.script = {};
 skidinc.script.secondArgs = [];
-
+ 
 skidinc.script.available = true;
 skidinc.script.current = null;
 skidinc.script.time = 0;
