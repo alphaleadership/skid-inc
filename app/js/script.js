@@ -7,66 +7,123 @@ skidinc.script.time = 0;
 skidinc.script.maxTime = 0;
 skidinc.script.maxBar = 40;
 
-skidinc.script.unlocked = [true, false, false, false, false, false, false, false];
-skidinc.script.completed = [0, 0, 0, 0, 0, 0, 0, 0];
+skidinc.script.unlocked = [];
+skidinc.script.completed = [];
 skidinc.script.totalCompleted = 0;
-skidinc.script.scripts = [{
-    id: 'hare.ctx',
-    cost: 0,
-    money: 118,
-    exp: 8,
-    time: 4,
-    i: 0
-}, {
-    id: 'yerg.trj',
-    cost: 3750,
-    money: 1298,
-    exp: 56,
-    time: 16,
-    i: 1
-}, {
-    id: 'acid.pl',
-    cost: 52500,
-    money: 14278,
-    exp: 392,
-    time: 64,
-    i: 2
-}, {
-    id: 'memz.rsm',
-    cost: 735000,
-    money: 157058,
-    exp: 2744,
-    time: 256,
-    i: 3
-}, {
-    id: 'gruel.vbs',
-    cost: 10290000,
-    money: 1727638,
-    exp: 19208,
-    time: 1024,
-    i: 4
-}, {
-    id: 'cih.win',
-    cost: 144060000,
-    money: 19004018,
-    exp: 134456,
-    time: 4096,
-    i: 5
-}, {
-    id: 'worm.cs',
-    cost: 2016840000,
-    money: 209044198,
-    exp: 941192,
-    time: 16384,
-    i: 6
-}, {
-    id: 'blazer.dos',
-    cost: 28235760000,
-    money: 2299486178,
-    exp: 6588344,
-    time: 65536,
-    i: 7
-}];
+skidinc.script.scripts = [];
+
+skidinc.script.getDefaultScripts = function() {
+    return [{
+        id: 'hare.ctx',
+        cost: 0,
+        money: 118,
+        exp: 8,
+        time: 4,
+        autoscriptCost: 420
+    }, {
+        id: 'yerg.trj',
+        cost: 3750,
+        money: 1298,
+        exp: 56,
+        time: 16,
+        autoscriptCost: 22500
+    }, {
+        id: 'acid.pl',
+        cost: 52500,
+        money: 14278,
+        exp: 392,
+        time: 64,
+        autoscriptCost: 315000
+    }, {
+        id: 'memz.rsm',
+        cost: 735000,
+        money: 157058,
+        exp: 2744,
+        time: 256,
+        autoscriptCost: 4410000
+    }, {
+        id: 'gruel.vbs',
+        cost: 10290000,
+        money: 1727638,
+        exp: 19208,
+        time: 1024,
+        autoscriptCost: 61740000
+    }, {
+        id: 'cih.win',
+        cost: 144060000,
+        money: 19004018,
+        exp: 134456,
+        time: 4096,
+        autoscriptCost: 864360000
+    }, {
+        id: 'worm.cs',
+        cost: 2016840000,
+        money: 209044198,
+        exp: 941192,
+        time: 16384,
+        autoscriptCost: 12101040000
+    }, {
+        id: 'blazer.dos',
+        cost: 28235760000,
+        money: 2299486178,
+        exp: 6588344,
+        time: 65536,
+        autoscriptCost: 169414560000
+    }, {
+        id: 'phantom.sys',
+        cost: 395300640000,
+        money: 25294347958,
+        exp: 46118408,
+        time: 262144,
+        autoscriptCost: 2371803840000
+    }];
+};
+
+skidinc.script.load = function(callback) {
+    $.getJSON('app/data/scripts.json')
+        .done(function(data) {
+            var scripts = data && data.scripts ? data.scripts : data;
+
+            if (!Array.isArray(scripts) || scripts.length === 0)
+                scripts = skidinc.script.getDefaultScripts();
+
+            skidinc.script.scripts = scripts.map(function(script, index) {
+                if (!script || !script.id)
+                    return null;
+
+                return {
+                    id: script.id,
+                    cost: script.cost,
+                    money: script.money,
+                    exp: script.exp,
+                    time: script.time,
+                    autoscriptCost: script.autoscriptCost,
+                    i: index
+                };
+            }).filter(Boolean);
+
+            if (skidinc.script.scripts.length === 0) {
+                skidinc.script.scripts = skidinc.script.getDefaultScripts().map(function(script, index) {
+                    script.i = index;
+                    return script;
+                });
+            }
+
+            if (typeof callback === 'function')
+                callback();
+        })
+        .fail(function() {
+            skidinc.script.scripts = skidinc.script.getDefaultScripts();
+
+            skidinc.script.scripts = skidinc.script.scripts.map(function(script, index) {
+                script.i = index;
+                return script;
+            });
+
+            if (typeof callback === 'function')
+                callback();
+        });
+};
 
 skidinc.script.isExecuted = function() {
     var executed = !this.available;

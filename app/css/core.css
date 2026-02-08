@@ -6,7 +6,7 @@ body {
 }
 
 body.inverted {
-    background: #333;
+    background: #1f2328;
 }
 
 [contenteditable]:focus {
