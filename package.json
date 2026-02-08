@@ -1,6 +1,6 @@
 {
   "name": "skid-inc",
-  "version": "0.1.2-14",
+  "version": "0.1.3",
   "description": "Idle-game with hacking theme.",
   "main": "src/main.js",
   "private": true,
@@ -31,7 +31,7 @@
     "build:all": "npm run prebuild && electron-builder --win  --linux",
     "build:dir": "npm run prebuild && electron-builder --dir",
     "build:automated": "npm run prebuild && electron-builder --x64 --publish always ",
-    "build:ci": "BUILD_PLATFORMS=current npm run build:automated",
+    "build:ci": "B3UILD_PLATFORMS=current npm run build:automated",
     "build:release": "BUILD_PLATFORMS=all npm run build:automated",
     "deploy": "node build/deploy.js",
     "deploy:github": "DEPLOY_TARGETS=github npm run deploy",
