@@ -87,23 +87,25 @@ skidinc.init = function() {
 
     skidinc.loadingScreen();
 
-    setTimeout(function() {
-        $('#loader').fadeOut('slow', function() {
-            $('#loader').remove();
-        });
+    skidinc.script.load(function() {
+        setTimeout(function() {
+            $('#loader').fadeOut('slow', function() {
+                $('#loader').remove();
+            });
 
-        skidinc.script.init();
-        skidinc.autoscript.init();
-        skidinc.buy.init();
-        skidinc.achievements.init();
-        skidinc.options.init();
-        skidinc.kongregate.init();
-        skidinc.save.init();
-        
-        skidinc.domInit();
-        
-        skidinc.tutorial.begin();
-    }, 3500);
+            skidinc.script.init();
+            skidinc.autoscript.init();
+            skidinc.buy.init();
+            skidinc.achievements.init();
+            skidinc.options.init();
+            skidinc.kongregate.init();
+            skidinc.save.init();
+            
+            skidinc.domInit();
+            
+            skidinc.tutorial.begin();
+        }, 3500);
+    });
 };
 
 skidinc.domInit = function() {
