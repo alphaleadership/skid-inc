@@ -1,7 +1,7 @@
 skidinc.autoscript = {};
-skidinc.autoscript.unlocked = [false, false, false, false, false, false, false, false];
-skidinc.autoscript.time = [0, 0, 0, 0, 0, 0, 0, 0];
-skidinc.autoscript.cost = [420, 22500, 315000, 4410000, 61740000, 864360000, 12101040000, 169414560000];
+skidinc.autoscript.unlocked = [];
+skidinc.autoscript.time = [];
+skidinc.autoscript.cost = [];
 
 skidinc.autoscript.list = function() {
     return '<b>*</b> autoscripts got the same names as scripts. You can also check the autoscript tab for names.';
@@ -136,6 +136,14 @@ skidinc.autoscript.init = function() {
         
         skidinc.script.scripts.forEach(function(i) {
             skidinc.autoscript.time.push(0);
+        });
+    };
+
+    if (skidinc.script.scripts.length !== skidinc.autoscript.cost.length) {
+        skidinc.autoscript.cost = [];
+
+        skidinc.script.scripts.forEach(function(script) {
+            skidinc.autoscript.cost.push(script.autoscriptCost || 0);
         });
     };
 };
