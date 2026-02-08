@@ -74,6 +74,10 @@ skidinc.save.loadNow = function() {
         skidinc.player.botnet = save.player.botnet;
         skidinc.player.prestigeCount = save.player.prestigeCount;
     };
+
+    if (save.version >= 0.34) {
+        skidinc.player.multiplierLevel = save.player.multiplierLevel;
+    };
     
     if (save.version >= 0.32) {
         skidinc.battery.level = save.battery.level;

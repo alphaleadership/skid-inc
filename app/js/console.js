@@ -72,6 +72,16 @@ skidinc.console.commands = [{
     requireArg: false,
     supportList: false,
     supportHelp: false
+}, {
+    id: 'cheat',
+    desc: 'use a cheat code.',
+    effect: 'skidinc.cheat.execute',
+    requireArg: true,
+    argsType: ['base', 'string'],
+    supportList: true,
+    listExec: 'skidinc.cheat.list',
+    supportHelp: true,
+    helpExec: 'skidinc.cheat.help'
 }];
 
 skidinc.console.checkStr = function(str) {

@@ -2,13 +2,14 @@ skidinc.buy = {};
 skidinc.buy.secondArgs = [];
 skidinc.buy.thirdArgs = [];
 
-skidinc.buy.categories = ['autoscript', 'script', 'server', 'battery'];
-skidinc.buy.categoriesList = ['skidinc.autoscript.list', 'skidinc.script.listBuy', 'skidinc.server.list', 'skidinc.battery.list'];
+skidinc.buy.categories = ['autoscript', 'script', 'server', 'battery', 'multiplier'];
+skidinc.buy.categoriesList = ['skidinc.autoscript.list', 'skidinc.script.listBuy', 'skidinc.server.list', 'skidinc.battery.list', 'skidinc.player.listMultiplier'];
 skidinc.buy.categoriesDesc = [
     'buy autoscripts to automatize script execution.',
     'buy new, more powerful scripts.',
     'upgrade your servers to maximize your income.',
-    'upgrade your battery level.'
+    'upgrade your battery level.',
+    'upgrade your global multipliers.'
 ];
 
 skidinc.buy.help = function() {
@@ -85,6 +86,10 @@ skidinc.buy.execute = function(args) {
             
             case 'battery':
                 skidinc.battery.buy();
+                break;
+
+            case 'multiplier':
+                skidinc.player.buyMultiplier();
                 break;
         };
     };

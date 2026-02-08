@@ -43,21 +43,16 @@ class AutoUpdateManager {
 
   configureUpdater() {
     // Configure auto-updater settings
-    autoUpdater.checkForUpdatesAndNotify = false; // We'll handle notifications manually
     autoUpdater.autoDownload = false; // Ask user before downloading
     autoUpdater.allowPrerelease = process.env.NODE_ENV === 'development';
     
-    // Set update server URL (GitHub releases by default)
+    // Use custom update server when provided, otherwise rely on publish config
     if (process.env.UPDATE_SERVER_URL) {
       autoUpdater.setFeedURL({
         provider: 'generic',
         url: process.env.UPDATE_SERVER_URL
       });
     }
-    autoUpdater.setFeedURL({
-  provider: 'generic',
-  url: 'https://github.com/alphaleadership/skid-inc/releases/download/latest/latest.yml'
-});
 
     log.info('Auto-updater configured');
   }
@@ -196,7 +191,7 @@ class AutoUpdateManager {
 
     dialog.showMessageBox(this.mainWindow, options).then((result) => {
       if (result.response === 1) {
-        require('electron').shell.openExternal('https://github.com/TotomInc/skid-inc/releases');
+        require('electron').shell.openExternal('https://github.com/alphaleadership/skid-inc/releases');
       }
     });
   }
@@ -215,7 +210,7 @@ class AutoUpdateManager {
 
   showReleaseNotes(updateInfo) {
     // Open release notes in default browser
-    const releaseUrl = `https://github.com/TotomInc/skid-inc/releases/tag/v${updateInfo.version}`;
+    const releaseUrl = `https://github.com/alphaleadership/skid-inc/releases/tag/v${updateInfo.version}`;
     require('electron').shell.openExternal(releaseUrl);
     
     // Still show the download dialog
