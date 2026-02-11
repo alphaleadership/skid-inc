@@ -4,6 +4,7 @@ const AutoSaveManager = require('./auto-save-manager');
 const FileSystemManager = require('./filesystem-manager');
 const MigrationManager = require('./migration-manager');
 const StartupOptimizer = require('./startup-optimizer');
+const ModLoader = require('./modding/mod-loader');
 
 const isDev = process.argv.includes('--dev');
 
@@ -269,6 +270,7 @@ class ElectronApp {
     this.migrationManager = null;
     this.startupOptimizer = null;
     this.autoUpdateManager = null;
+    this.modLoader = null;
     this.setupApp();
   }
 
@@ -282,6 +284,7 @@ class ElectronApp {
         await this.optimizedStartup();
         this.createWindow();
         this.setupMenu();
+        await this.initializeModLoader();
         this.setupIPC();
         
         const startupTime = Date.now() - startupStart;
@@ -300,6 +303,7 @@ class ElectronApp {
         // Still create window even if optimization fails
         this.createWindow();
         this.setupMenu();
+        await this.initializeModLoader();
         this.setupIPC();
       }
     });
@@ -311,11 +315,27 @@ class ElectronApp {
       }
     });
 
+    app.on('before-quit', async () => {
+      if (this.modLoader) {
+        await this.modLoader.unloadAllMods();
+      }
+    });
+
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {
         this.createWindow();
       }
     });
+  }
+
+  async initializeModLoader() {
+    try {
+      this.modLoader = new ModLoader();
+      const state = await this.modLoader.initialize();
+      console.log(`Mod loader initialized with ${state.mods.length} mod(s)`);
+    } catch (error) {
+      console.error('Failed to initialize mod loader:', error.message);
+    }
   }
 
   createWindow() {
