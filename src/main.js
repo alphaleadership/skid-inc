@@ -1,5 +1,5 @@
 const { app, BrowserWindow, Menu, ipcMain, dialog, shell } = require('electron');
-const LogRocket = require('@logrocket/node');
+const LogRocket = require('logrocket');
 const fsModule = require('fs');
 const fs = fsModule.promises;
 const path = require('path');
