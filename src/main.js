@@ -10,8 +10,27 @@ const StartupOptimizer = require('./startup-optimizer');
 const ModLoader = require('./modding/mod-loader');
 
 
-
 LogRocket.init('kw8sds/skidinc');
+
+function reportErrorToLogRocket(error, context = {}) {
+  if (typeof LogRocket.captureException !== 'function') {
+    return;
+  }
+
+  const normalizedError = error instanceof Error ? error : new Error(String(error));
+  LogRocket.captureException(normalizedError, {
+    tags: { process: 'main' },
+    extra: context
+  });
+}
+
+process.on('uncaughtException', (error) => {
+  reportErrorToLogRocket(error, { type: 'uncaughtException' });
+});
+
+process.on('unhandledRejection', (reason) => {
+  reportErrorToLogRocket(reason, { type: 'unhandledRejection' });
+});
 
 const isDev = process.argv.includes('--dev');
 const isSafeStart = process.argv.includes('--safe-start') || process.argv.includes('--disable-mods');

@@ -35,7 +35,26 @@
     <script src="https://cdn1.kongregate.com/javascripts/kongregate_api.js"></script>
     
     <script src="https://cdn.logr-in.com/LogRocket.min.js" crossorigin="anonymous"></script>
-    <script>window.LogRocket && window.LogRocket.init('kw8sds/skidinc');</script>
+    <script>
+        if (window.LogRocket) {
+            window.LogRocket.init('kw8sds/skidinc');
+
+            window.addEventListener('error', function (event) {
+                var error = event && event.error ? event.error : new Error(event.message || 'Unknown renderer error');
+                window.LogRocket.captureException && window.LogRocket.captureException(error, {
+                    tags: { process: 'renderer' }
+                });
+            });
+
+            window.addEventListener('unhandledrejection', function (event) {
+                var reason = event && event.reason ? event.reason : 'Unknown promise rejection';
+                var error = reason instanceof Error ? reason : new Error(String(reason));
+                window.LogRocket.captureException && window.LogRocket.captureException(error, {
+                    tags: { process: 'renderer', type: 'unhandledrejection' }
+                });
+            });
+        }
+    </script>
 
     <script src="app/lib/typed.min.js"></script>
     <script src="app/lib/jquery.caret.min.js"></script>
