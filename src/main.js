@@ -1,4 +1,5 @@
 const { app, BrowserWindow, Menu, ipcMain, dialog, shell } = require('electron');
+const LogRocket = require('@logrocket/node');
 const fsModule = require('fs');
 const fs = fsModule.promises;
 const path = require('path');
@@ -8,6 +9,9 @@ const MigrationManager = require('./migration-manager');
 const StartupOptimizer = require('./startup-optimizer');
 const ModLoader = require('./modding/mod-loader');
 
+
+
+LogRocket.init('kw8sds/skidinc');
 
 const isDev = process.argv.includes('--dev');
 const isSafeStart = process.argv.includes('--safe-start') || process.argv.includes('--disable-mods');
