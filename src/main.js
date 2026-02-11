@@ -242,6 +242,7 @@ class AutoUpdateManager {
   }
 
   showUpdateErrorDialog(error) {
+    log.error(error)
     const options = {
       type: 'error',
       title: 'Erreur de mise à jour',
@@ -364,6 +365,7 @@ class ElectronApp {
   }
 
   createErrorResponse(error, code = 'INTERNAL_ERROR') {
+    log.error(error)
     return {
       success: false,
       data: null,
@@ -453,6 +455,7 @@ class ElectronApp {
         this.performPostStartupOptimizations();
         
       } catch (error) {
+        log.error(error)
         console.error('Application startup failed:', error.message);
         // Still create window even if optimization fails
         this.createWindow();
