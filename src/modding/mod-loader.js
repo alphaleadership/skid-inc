@@ -366,7 +366,7 @@ class ModLoader {
       })
     };
 
-    sandbox.globalThis = sandbox;
+    sandbox.globalThis = Object.freeze({ ...sandbox });
 
     const context = vm.createContext(sandbox, {
       name: `mod:${modId}`,
