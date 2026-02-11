@@ -13,6 +13,8 @@ const ModLoader = require('./modding/mod-loader');
 LogRocket.init('kw8sds/skidinc');
 
 function reportErrorToLogRocket(error, context = {}) {
+  console.log(typeof LogRocket.captureException)
+  console.log(LogRocket)
   if (typeof LogRocket.captureException !== 'function') {
     return;
   }
