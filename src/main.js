@@ -1,4 +1,5 @@
 const { app, BrowserWindow, Menu, ipcMain, dialog, shell } = require('electron');
+const LogRocket = require('@logrocket/node');
 const fsModule = require('fs');
 const fs = fsModule.promises;
 const path = require('path');
@@ -7,6 +8,29 @@ const FileSystemManager = require('./filesystem-manager');
 const MigrationManager = require('./migration-manager');
 const StartupOptimizer = require('./startup-optimizer');
 const ModLoader = require('./modding/mod-loader');
+
+
+LogRocket.init('kw8sds/skidinc');
+
+function reportErrorToLogRocket(error, context = {}) {
+  if (typeof LogRocket.captureException !== 'function') {
+    return;
+  }
+
+  const normalizedError = error instanceof Error ? error : new Error(String(error));
+  LogRocket.captureException(normalizedError, {
+    tags: { process: 'main' },
+    extra: context
+  });
+}
+
+process.on('uncaughtException', (error) => {
+  reportErrorToLogRocket(error, { type: 'uncaughtException' });
+});
+
+process.on('unhandledRejection', (reason) => {
+  reportErrorToLogRocket(reason, { type: 'unhandledRejection' });
+});
 
 const isDev = process.argv.includes('--dev');
 const isSafeStart = process.argv.includes('--safe-start') || process.argv.includes('--disable-mods');
@@ -21,6 +45,40 @@ if (!isDev) {
 }
 
 const log = require('electron-log');
+
+
+function setupElectronLogForwarding() {
+  if (!Array.isArray(log.hooks)) {
+    return;
+  }
+
+  log.hooks.push((message, transport) => {
+    if (message.level !== 'error') {
+      return message;
+    }
+
+    const errorFromData = Array.isArray(message.data)
+      ? message.data.find((entry) => entry instanceof Error)
+      : null;
+
+    const fallbackText = Array.isArray(message.data)
+      ? message.data.map((entry) => String(entry)).join(' ')
+      : String(message.data || message.text || 'electron-log error');
+
+    const errorToReport = errorFromData || new Error(fallbackText);
+
+    reportErrorToLogRocket(errorToReport, {
+      type: 'electron-log',
+      transport: transport && transport.name ? transport.name : 'unknown',
+      level: message.level,
+      scope: message.scope || 'default'
+    });
+
+    return message;
+  });
+}
+
+setupElectronLogForwarding();
 
 class AutoUpdateManager {
   constructor(mainWindow) {
