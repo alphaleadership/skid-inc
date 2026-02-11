@@ -10,7 +10,11 @@ const StartupOptimizer = require('./startup-optimizer');
 const ModLoader = require('./modding/mod-loader');
 
 
-LogRocket.init('kw8sds/skidinc');
+LogRocket.init('kw8sds/skidinc', {
+  console: {
+    shouldAggregateConsoleErrors: true,
+  },
+});
 
 function reportErrorToLogRocket(error, context = {}) {
   console.log(typeof LogRocket.captureException)
