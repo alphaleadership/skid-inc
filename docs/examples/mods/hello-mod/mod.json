@@ -1,0 +1,9 @@
+{
+  "id": "hello-mod",
+  "name": "Hello Mod",
+  "version": "1.0.0",
+  "entry": "index.js",
+  "apiVersion": ">=1.0.0 <=1.0.0",
+  "gameVersionRange": ">=0.0.0",
+  "permissions": ["logger", "hooks:register"]
+}
