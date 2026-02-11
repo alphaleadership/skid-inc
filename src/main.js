@@ -1,4 +1,5 @@
-const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, dialog, shell } = require('electron');
+const fs = require('fs').promises;
 const path = require('path');
 const AutoSaveManager = require('./auto-save-manager');
 const FileSystemManager = require('./filesystem-manager');
@@ -270,8 +271,83 @@ class ElectronApp {
     this.migrationManager = null;
     this.startupOptimizer = null;
     this.autoUpdateManager = null;
+    this.modErrors = [];
     this.modLoader = null;
     this.setupApp();
+  }
+
+  createSuccessResponse(data = null) {
+    return {
+      success: true,
+      data,
+      error: null,
+      code: null
+    };
+  }
+
+  createErrorResponse(error, code = 'INTERNAL_ERROR') {
+    return {
+      success: false,
+      data: null,
+      error: error?.message || String(error),
+      code
+    };
+  }
+
+  getModsDirectory() {
+    return path.join(app.getPath('userData'), 'mods');
+  }
+
+  getModsStatePath() {
+    return path.join(this.getModsDirectory(), 'mods-state.json');
+  }
+
+  async ensureModsDirectory() {
+    await fs.mkdir(this.getModsDirectory(), { recursive: true });
+  }
+
+  validateModId(modId) {
+    if (typeof modId !== 'string' || !modId.trim()) {
+      throw new Error('modId must be a non-empty string');
+    }
+
+    if (modId.includes('/') || modId.includes('\\') || modId.includes('..')) {
+      throw new Error('modId contains invalid path characters');
+    }
+
+    return modId.trim();
+  }
+
+  async readModsState() {
+    try {
+      const raw = await fs.readFile(this.getModsStatePath(), 'utf8');
+      const state = JSON.parse(raw);
+      return (state && typeof state === 'object') ? state : {};
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        return {};
+      }
+
+      throw error;
+    }
+  }
+
+  async writeModsState(state) {
+    await fs.writeFile(this.getModsStatePath(), JSON.stringify(state, null, 2), 'utf8');
+  }
+
+  async listMods() {
+    await this.ensureModsDirectory();
+    const entries = await fs.readdir(this.getModsDirectory(), { withFileTypes: true });
+    const state = await this.readModsState();
+
+    return entries
+      .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
+      .map((entry) => ({
+        modId: entry.name,
+        enabled: state[entry.name] !== false
+      }))
+      .sort((a, b) => a.modId.localeCompare(b.modId));
   }
 
   setupApp() {
@@ -1025,6 +1101,8 @@ class ElectronApp {
       }
     });
 
+    this.setupModsIPCHandlers();
+
     // Setup auto-save event forwarding to renderer
     this.setupAutoSaveEventForwarding();
 
@@ -1035,6 +1113,94 @@ class ElectronApp {
     this.setupAutoUpdaterHandlers();
 
     console.log('IPC handlers configured successfully');
+  }
+
+  setupModsIPCHandlers() {
+    ipcMain.handle('mods-list', async () => {
+      try {
+        const mods = await this.listMods();
+        return this.createSuccessResponse({ mods });
+      } catch (error) {
+        this.modErrors.push({ action: 'mods-list', error: error.message, timestamp: Date.now() });
+        return this.createErrorResponse(error, 'MODS_LIST_FAILED');
+      }
+    });
+
+    ipcMain.handle('mods-enable', async (event, modId) => {
+      try {
+        const normalizedModId = this.validateModId(modId);
+        await this.ensureModsDirectory();
+        const modPath = path.join(this.getModsDirectory(), normalizedModId);
+        const stats = await fs.stat(modPath);
+
+        if (!stats.isDirectory()) {
+          throw new Error(`Mod "${normalizedModId}" is not a directory`);
+        }
+
+        const state = await this.readModsState();
+        state[normalizedModId] = true;
+        await this.writeModsState(state);
+
+        return this.createSuccessResponse({ modId: normalizedModId, enabled: true });
+      } catch (error) {
+        this.modErrors.push({ action: 'mods-enable', modId, error: error.message, timestamp: Date.now() });
+        const code = error.code === 'ENOENT' ? 'MOD_NOT_FOUND' : 'MOD_ENABLE_FAILED';
+        return this.createErrorResponse(error, code);
+      }
+    });
+
+    ipcMain.handle('mods-disable', async (event, modId) => {
+      try {
+        const normalizedModId = this.validateModId(modId);
+        const state = await this.readModsState();
+        state[normalizedModId] = false;
+        await this.writeModsState(state);
+
+        return this.createSuccessResponse({ modId: normalizedModId, enabled: false });
+      } catch (error) {
+        this.modErrors.push({ action: 'mods-disable', modId, error: error.message, timestamp: Date.now() });
+        return this.createErrorResponse(error, 'MOD_DISABLE_FAILED');
+      }
+    });
+
+    ipcMain.handle('mods-reload', async () => {
+      try {
+        const mods = await this.listMods();
+        return this.createSuccessResponse({
+          reloadedAt: Date.now(),
+          totalMods: mods.length,
+          enabledMods: mods.filter((mod) => mod.enabled).length
+        });
+      } catch (error) {
+        this.modErrors.push({ action: 'mods-reload', error: error.message, timestamp: Date.now() });
+        return this.createErrorResponse(error, 'MODS_RELOAD_FAILED');
+      }
+    });
+
+    ipcMain.handle('mods-get-errors', async () => {
+      try {
+        return this.createSuccessResponse({ errors: [...this.modErrors] });
+      } catch (error) {
+        return this.createErrorResponse(error, 'MODS_GET_ERRORS_FAILED');
+      }
+    });
+
+    ipcMain.handle('mods-open-directory', async () => {
+      try {
+        await this.ensureModsDirectory();
+        const modsDirectory = this.getModsDirectory();
+        const openResult = await shell.openPath(modsDirectory);
+
+        if (openResult) {
+          throw new Error(openResult);
+        }
+
+        return this.createSuccessResponse({ path: modsDirectory });
+      } catch (error) {
+        this.modErrors.push({ action: 'mods-open-directory', error: error.message, timestamp: Date.now() });
+        return this.createErrorResponse(error, 'MODS_OPEN_DIRECTORY_FAILED');
+      }
+    });
   }
 
   /**

@@ -1,5 +1,13 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+function requireNonEmptyString(value, paramName) {
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new TypeError(`${paramName} must be a non-empty string`);
+  }
+
+  return value.trim();
+}
+
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -45,6 +53,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getMigrationStatistics: () => ipcRenderer.invoke('get-migration-statistics'),
   resetMigrationStatus: () => ipcRenderer.invoke('reset-migration-status'),
   decodeLocalStorageData: (encodedData) => ipcRenderer.invoke('decode-localstorage-data', encodedData),
+
+  // Mods system methods
+  getModsList: () => ipcRenderer.invoke('mods-list'),
+  enableMod: (modId) => ipcRenderer.invoke('mods-enable', requireNonEmptyString(modId, 'modId')),
+  disableMod: (modId) => ipcRenderer.invoke('mods-disable', requireNonEmptyString(modId, 'modId')),
+  reloadMods: () => ipcRenderer.invoke('mods-reload'),
+  getModErrors: () => ipcRenderer.invoke('mods-get-errors'),
+  openModsDirectory: () => ipcRenderer.invoke('mods-open-directory'),
   
   // Event listeners
   onSaveStatus: (callback) => ipcRenderer.on('save-status', callback),
