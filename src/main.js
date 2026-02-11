@@ -315,9 +315,18 @@ class ElectronApp {
       }
     });
 
-    app.on('before-quit', async () => {
+    let isQuitting = false;
+    app.on('before-quit', async (event) => {
+      if (isQuitting) return;
       if (this.modLoader) {
-        await this.modLoader.unloadAllMods();
+        event.preventDefault();
+        isQuitting = true;
+        try {
+          await this.modLoader.unloadAllMods();
+        } catch (error) {
+          console.error('Error unloading mods:', error.message);
+        }
+        app.quit();
       }
     });
 
