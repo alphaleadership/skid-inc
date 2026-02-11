@@ -508,7 +508,7 @@ class ElectronApp {
       const safeStartMessage = isSafeStart ? ' (safe-start mode active)' : '';
       console.log(`Mod loader initialized with ${state.mods.length} mod(s)${safeStartMessage}`);
     } catch (error) {
-      console.error('Failed to initialize mod loader:', error.message);
+      log.error('Failed to initialize mod loader:', error.message);
     }
   }
 
@@ -652,7 +652,7 @@ class ElectronApp {
       
       console.log('Save managers initialized successfully');
     } catch (error) {
-      console.error('Failed to initialize save managers:', error.message);
+      log.error('Failed to initialize save managers:', error.message);
       throw error;
     }
   }
@@ -709,7 +709,7 @@ class ElectronApp {
       }, 1000); // Wait 1 second after startup
       
     } catch (error) {
-      console.warn('Post-startup optimizations failed:', error.message);
+      log.warn('Post-startup optimizations failed:', error.message);
     }
   }
 
