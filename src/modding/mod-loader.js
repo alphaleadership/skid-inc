@@ -488,8 +488,8 @@ class ModLoader {
 
     if (modState.manifest.permissions.includes('logger')) {
       context.logger = {
-        info: (message, details) => this.logForMod(modId, phase, message, details),
-        error: (message, details) => this.logForMod(modId, `${phase}-error`, message, details)
+        info: (message, details) => this.logForMod(modId, phase, message, details instanceof Error ? details : undefined),
+        error: (message, details) => this.logForMod(modId, `${phase}-error`, message, details instanceof Error ? details : undefined)
       };
     }
 
