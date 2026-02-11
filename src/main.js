@@ -46,6 +46,40 @@ if (!isDev) {
 
 const log = require('electron-log');
 
+
+function setupElectronLogForwarding() {
+  if (!Array.isArray(log.hooks)) {
+    return;
+  }
+
+  log.hooks.push((message, transport) => {
+    if (message.level !== 'error') {
+      return message;
+    }
+
+    const errorFromData = Array.isArray(message.data)
+      ? message.data.find((entry) => entry instanceof Error)
+      : null;
+
+    const fallbackText = Array.isArray(message.data)
+      ? message.data.map((entry) => String(entry)).join(' ')
+      : String(message.data || message.text || 'electron-log error');
+
+    const errorToReport = errorFromData || new Error(fallbackText);
+
+    reportErrorToLogRocket(errorToReport, {
+      type: 'electron-log',
+      transport: transport && transport.name ? transport.name : 'unknown',
+      level: message.level,
+      scope: message.scope || 'default'
+    });
+
+    return message;
+  });
+}
+
+setupElectronLogForwarding();
+
 class AutoUpdateManager {
   constructor(mainWindow) {
     this.mainWindow = mainWindow;
