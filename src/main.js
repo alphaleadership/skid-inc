@@ -1,5 +1,4 @@
 const { app, BrowserWindow, Menu, ipcMain, dialog, shell } = require('electron');
-const Sentry = require('@sentry/electron/main');
 const fsModule = require('fs');
 const fs = fsModule.promises;
 const path = require('path');
@@ -9,9 +8,6 @@ const MigrationManager = require('./migration-manager');
 const StartupOptimizer = require('./startup-optimizer');
 const ModLoader = require('./modding/mod-loader');
 
-Sentry.init({
-  dsn: 'https://d64ec534d998219da1078972b5e2d439@o4510511126478848.ingest.de.sentry.io/4510866738380880'
-});
 
 const isDev = process.argv.includes('--dev');
 const isSafeStart = process.argv.includes('--safe-start') || process.argv.includes('--disable-mods');
