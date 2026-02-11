@@ -1,0 +1,23 @@
+name: Gemini Kanban Integration
+on:
+  issues:
+    types: [opened, labeled]
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  process-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Gemini Kanban Action
+        uses: alphaleadership/kanbanaction@master
+        with:
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
