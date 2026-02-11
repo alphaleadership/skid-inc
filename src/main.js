@@ -50,6 +50,7 @@ const log = require('electron-log');
 
 
 function setupElectronLogForwarding() {
+  console.log(log.hooks)
   if (!Array.isArray(log.hooks)) {
     return;
   }
