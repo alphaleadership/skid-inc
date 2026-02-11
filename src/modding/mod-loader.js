@@ -347,10 +347,6 @@ class ModLoader {
       errors.push(`gameVersionRange "${manifest.gameVersionRange}" is incompatible with game version ${this.options.gameVersion}`);
     }
 
-    if (typeof manifest.apiVersion === 'string' && !satisfiesSimpleRange(this.options.appVersion, manifest.apiVersion)) {
-      errors.push(`apiVersion "${manifest.apiVersion}" is incompatible with app version ${this.options.appVersion}`);
-    }
-
     if (errors.length > 0) {
       throw new ManifestValidationError(`Manifest in ${manifestPath} failed strict validation`, errors);
     }
