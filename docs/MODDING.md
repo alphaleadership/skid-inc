@@ -131,7 +131,7 @@ Ces méthodes reposent sur des handlers IPC côté main (`mods-list`, `mods-enab
 
 ### Sécurité
 
-- Demander le **minimum** de permissions nécessaire.
+- Demander le **minimum** de permissions nécessaires.
 - Ne pas tenter de contourner le sandbox VM : pas de dépendance à des APIs Node non exposées.
 - Valider les payloads de hooks avant traitement.
 - Gérer les erreurs dans les handlers pour éviter les états dégradés.
