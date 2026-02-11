@@ -1,8 +1,110 @@
 const fs = require('fs/promises');
 const path = require('path');
+const vm = require('vm');
 const { app } = require('electron');
 
-const REQUIRED_MANIFEST_FIELDS = ['id', 'name', 'version', 'entry'];
+const CURRENT_MOD_API_VERSION = '1.0.0';
+const REQUIRED_MANIFEST_FIELDS = ['id', 'name', 'version', 'entry', 'apiVersion', 'gameVersionRange', 'permissions'];
+const ALLOWED_MANIFEST_FIELDS = new Set(REQUIRED_MANIFEST_FIELDS);
+const ALLOWED_PERMISSIONS = new Set(['hooks:register', 'hooks:emit', 'logger']);
+
+class ManifestValidationError extends Error {
+  constructor(message, details = []) {
+    super(message);
+    this.name = 'ManifestValidationError';
+    this.details = details;
+  }
+}
+
+function normalizeVersion(version) {
+  if (typeof version !== 'string') {
+    return null;
+  }
+
+  const cleaned = version.trim().replace(/^v/i, '');
+  if (!/^\d+(\.\d+){0,2}$/.test(cleaned)) {
+    return null;
+  }
+
+  const parts = cleaned.split('.').map((part) => Number(part));
+  while (parts.length < 3) {
+    parts.push(0);
+  }
+
+  return parts;
+}
+
+function compareVersions(leftVersion, rightVersion) {
+  const left = normalizeVersion(leftVersion);
+  const right = normalizeVersion(rightVersion);
+
+  if (!left || !right) {
+    return null;
+  }
+
+  for (let index = 0; index < 3; index += 1) {
+    if (left[index] > right[index]) {
+      return 1;
+    }
+
+    if (left[index] < right[index]) {
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
+function satisfiesSimpleRange(version, rangeExpression) {
+  if (typeof rangeExpression !== 'string' || !rangeExpression.trim()) {
+    return false;
+  }
+
+  const rules = rangeExpression.split(' ').map((rule) => rule.trim()).filter(Boolean);
+  if (rules.length === 0) {
+    return false;
+  }
+
+  return rules.every((rule) => {
+    let operator = '==';
+    let value = rule;
+
+    if (rule.startsWith('>=')) {
+      operator = '>=';
+      value = rule.slice(2);
+    } else if (rule.startsWith('<=')) {
+      operator = '<=';
+      value = rule.slice(2);
+    } else if (rule.startsWith('>')) {
+      operator = '>';
+      value = rule.slice(1);
+    } else if (rule.startsWith('<')) {
+      operator = '<';
+      value = rule.slice(1);
+    } else if (rule.startsWith('=')) {
+      operator = '==';
+      value = rule.slice(1);
+    }
+
+    const comparison = compareVersions(version, value);
+    if (comparison === null) {
+      return false;
+    }
+
+    switch (operator) {
+      case '>=':
+        return comparison >= 0;
+      case '<=':
+        return comparison <= 0;
+      case '>':
+        return comparison > 0;
+      case '<':
+        return comparison < 0;
+      default:
+        return comparison === 0;
+    }
+  });
+}
 
 class HookRegistry {
   constructor(logger) {
@@ -88,14 +190,25 @@ class HookRegistry {
 }
 
 class ModLoader {
-  constructor() {
+  constructor(options = {}) {
     this.modsDirectory = path.join(app.getPath('userData'), 'mods');
     this.modRegistry = new Map();
     this.hookRegistry = new HookRegistry(this.logForMod.bind(this));
+    this.options = {
+      appVersion: options.appVersion || app.getVersion(),
+      gameVersion: options.gameVersion || '0.0.0',
+      safeStart: Boolean(options.safeStart)
+    };
   }
 
   async initialize() {
     await fs.mkdir(this.modsDirectory, { recursive: true });
+
+    if (this.options.safeStart) {
+      console.warn('[ModLoader] Safe-start active, all mods disabled for this session.');
+      return this.getStateSnapshot();
+    }
+
     const modFolders = await this.getModFolders();
 
     for (const folderPath of modFolders) {
@@ -149,7 +262,7 @@ class ModLoader {
         throw new Error('Entry path must stay inside the mod directory');
       }
 
-      modState.module = require(entryPath);
+      modState.module = await this.loadModModule(modId, entryPath);
 
       await this.runLifecycle(modId, 'onLoad');
       await this.enableMod(modId);
@@ -161,15 +274,128 @@ class ModLoader {
   }
 
   validateManifest(manifest, manifestPath) {
+    const errors = [];
+
     if (!manifest || typeof manifest !== 'object') {
-      throw new Error(`Manifest in ${manifestPath} is not a JSON object`);
+      throw new ManifestValidationError(`Manifest in ${manifestPath} is not a JSON object`);
+    }
+
+    for (const fieldName of Object.keys(manifest)) {
+      if (!ALLOWED_MANIFEST_FIELDS.has(fieldName)) {
+        errors.push(`Field "${fieldName}" is not allowed`);
+      }
     }
 
     for (const field of REQUIRED_MANIFEST_FIELDS) {
-      if (!manifest[field] || typeof manifest[field] !== 'string') {
-        throw new Error(`Manifest in ${manifestPath} is missing required string field "${field}"`);
+      if (manifest[field] === undefined || manifest[field] === null) {
+        errors.push(`Missing required field "${field}"`);
       }
     }
+
+    if (typeof manifest.id !== 'string' || !/^[a-z0-9._-]{3,64}$/i.test(manifest.id)) {
+      errors.push('Field "id" must match /^[a-z0-9._-]{3,64}$/i');
+    }
+
+    if (typeof manifest.name !== 'string' || manifest.name.trim().length < 2) {
+      errors.push('Field "name" must be a non-empty string (min length: 2)');
+    }
+
+    if (typeof manifest.version !== 'string' || !normalizeVersion(manifest.version)) {
+      errors.push('Field "version" must use numeric format like "1.2.3"');
+    }
+
+    if (typeof manifest.entry !== 'string' || !manifest.entry.trim().endsWith('.js')) {
+      errors.push('Field "entry" must be a .js relative path');
+    }
+
+    if (typeof manifest.apiVersion !== 'string' || !manifest.apiVersion.trim()) {
+      errors.push('Field "apiVersion" must be a non-empty version range string');
+    }
+
+    if (typeof manifest.gameVersionRange !== 'string' || !manifest.gameVersionRange.trim()) {
+      errors.push('Field "gameVersionRange" must be a non-empty version range string');
+    }
+
+    if (!Array.isArray(manifest.permissions)) {
+      errors.push('Field "permissions" must be an array of strings');
+    } else {
+      if (manifest.permissions.length === 0) {
+        errors.push('Field "permissions" cannot be empty');
+      }
+
+      for (const permission of manifest.permissions) {
+        if (typeof permission !== 'string') {
+          errors.push('All permissions must be strings');
+          continue;
+        }
+
+        if (!ALLOWED_PERMISSIONS.has(permission)) {
+          errors.push(`Permission "${permission}" is not recognized`);
+        }
+      }
+    }
+
+    if (typeof manifest.entry === 'string' && path.isAbsolute(manifest.entry)) {
+      errors.push('Field "entry" must be relative, absolute paths are forbidden');
+    }
+
+    if (typeof manifest.apiVersion === 'string' && !satisfiesSimpleRange(CURRENT_MOD_API_VERSION, manifest.apiVersion)) {
+      errors.push(`apiVersion "${manifest.apiVersion}" is incompatible with supported mod API ${CURRENT_MOD_API_VERSION}`);
+    }
+
+    if (typeof manifest.gameVersionRange === 'string' && !satisfiesSimpleRange(this.options.gameVersion, manifest.gameVersionRange)) {
+      errors.push(`gameVersionRange "${manifest.gameVersionRange}" is incompatible with game version ${this.options.gameVersion}`);
+    }
+
+    if (typeof manifest.apiVersion === 'string' && !satisfiesSimpleRange(this.options.appVersion, manifest.apiVersion)) {
+      errors.push(`apiVersion "${manifest.apiVersion}" is incompatible with app version ${this.options.appVersion}`);
+    }
+
+    if (errors.length > 0) {
+      throw new ManifestValidationError(`Manifest in ${manifestPath} failed strict validation`, errors);
+    }
+  }
+
+  async loadModModule(modId, entryPath) {
+    const entryCode = await fs.readFile(entryPath, 'utf8');
+    const sandbox = {
+      module: { exports: {} },
+      exports: {},
+      globalThis: null,
+      console: Object.freeze({
+        log: (...args) => this.logForMod(modId, 'vm-log', args.join(' ')),
+        info: (...args) => this.logForMod(modId, 'vm-log', args.join(' ')),
+        warn: (...args) => this.logForMod(modId, 'vm-warn', args.join(' ')),
+        error: (...args) => this.logForMod(modId, 'vm-error', args.join(' '))
+      })
+    };
+
+    sandbox.globalThis = sandbox;
+
+    const context = vm.createContext(sandbox, {
+      name: `mod:${modId}`,
+      codeGeneration: {
+        strings: false,
+        wasm: false
+      }
+    });
+
+    const script = new vm.Script(entryCode, {
+      filename: entryPath,
+      displayErrors: true
+    });
+
+    script.runInContext(context, { timeout: 1000 });
+
+    const exported = sandbox.module.exports && Object.keys(sandbox.module.exports).length > 0
+      ? sandbox.module.exports
+      : sandbox.exports;
+
+    if (!exported || (typeof exported !== 'object' && typeof exported !== 'function')) {
+      throw new Error('Mod entry must export an object containing lifecycle functions');
+    }
+
+    return exported;
   }
 
   async enableMod(modId) {
@@ -244,15 +470,32 @@ class ModLoader {
 
     const context = {
       manifest: modState.manifest,
-      hooks: {
-        on: (hookName, hookHandler) => this.hookRegistry.register(modId, hookName, hookHandler),
-        emit: (hookName, payload) => this.hookRegistry.emit(hookName, payload)
+      permissions: [...modState.manifest.permissions],
+      app: {
+        version: this.options.appVersion,
+        modApiVersion: CURRENT_MOD_API_VERSION
       },
-      logger: {
-        info: (message, details) => this.logForMod(modId, phase, message, details),
-        error: (message, details) => this.logForMod(modId, `${phase}-error`, message, details)
+      game: {
+        version: this.options.gameVersion
       }
     };
+
+    if (modState.manifest.permissions.includes('hooks:register') || modState.manifest.permissions.includes('hooks:emit')) {
+      context.hooks = {};
+      if (modState.manifest.permissions.includes('hooks:register')) {
+        context.hooks.on = (hookName, hookHandler) => this.hookRegistry.register(modId, hookName, hookHandler);
+      }
+      if (modState.manifest.permissions.includes('hooks:emit')) {
+        context.hooks.emit = (hookName, payload) => this.hookRegistry.emit(hookName, payload);
+      }
+    }
+
+    if (modState.manifest.permissions.includes('logger')) {
+      context.logger = {
+        info: (message, details) => this.logForMod(modId, phase, message, details),
+        error: (message, details) => this.logForMod(modId, `${phase}-error`, message, details)
+      };
+    }
 
     await handler(context);
   }
@@ -266,7 +509,8 @@ class ModLoader {
         name: state.manifest.name,
         version: state.manifest.version,
         status: state.status,
-        errors: [...state.errors]
+        errors: [...state.errors],
+        permissions: [...state.manifest.permissions]
       });
     }
 
@@ -292,7 +536,8 @@ class ModLoader {
     if (error) {
       logEntry.error = {
         message: error.message || String(error),
-        stack: error.stack || null
+        stack: error.stack || null,
+        details: Array.isArray(error.details) ? error.details : undefined
       };
     }
 
