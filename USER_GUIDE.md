@@ -12,6 +12,7 @@ Ce guide détaille l'utilisation de l'application desktop Skid-Inc et ses foncti
 6. [Mises à Jour](#mises-à-jour)
 7. [Conseils et Astuces](#conseils-et-astuces)
 8. [FAQ](#faq)
+9. [Modding](#modding)
 
 ## Démarrage Rapide
 
@@ -364,3 +365,8 @@ R: Redémarrez l'application et vérifiez l'usage mémoire des autres programmes
 ---
 
 *Ce guide est mis à jour avec chaque nouvelle version. Pour obtenir de l'aide supplémentaire, consultez la [documentation GitHub](https://github.com/TotomInc/skid-inc) ou signalez un problème.*
+
+## Modding
+
+- Consultez le guide dédié : [`docs/MODDING.md`](./docs/MODDING.md).
+- Exemple prêt à l'emploi : [`docs/examples/mods/hello-mod/`](./docs/examples/mods/hello-mod/).
