@@ -142,8 +142,10 @@ class ModLoader {
 
     try {
       const entryPath = path.resolve(modDirectory, manifest.entry);
+      const normalizedModDir = path.normalize(modDirectory) + path.sep;
+      const normalizedEntry = path.normalize(entryPath);
 
-      if (!entryPath.startsWith(modDirectory)) {
+      if (!normalizedEntry.startsWith(normalizedModDir)) {
         throw new Error('Entry path must stay inside the mod directory');
       }
 
