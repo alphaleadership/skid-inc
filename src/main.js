@@ -1,5 +1,6 @@
 const { app, BrowserWindow, Menu, ipcMain, dialog, shell } = require('electron');
-const fs = require('fs').promises;
+const fsModule = require('fs');
+const fs = fsModule.promises;
 const path = require('path');
 const AutoSaveManager = require('./auto-save-manager');
 const FileSystemManager = require('./filesystem-manager');
@@ -8,6 +9,7 @@ const StartupOptimizer = require('./startup-optimizer');
 const ModLoader = require('./modding/mod-loader');
 
 const isDev = process.argv.includes('--dev');
+const isSafeStart = process.argv.includes('--safe-start') || process.argv.includes('--disable-mods');
 
 // Import electron-updater only if not in development mode
 let autoUpdater;
@@ -273,7 +275,25 @@ class ElectronApp {
     this.autoUpdateManager = null;
     this.modErrors = [];
     this.modLoader = null;
+    this.gameVersion = this.readGameVersionFromSource();
     this.setupApp();
+  }
+
+  readGameVersionFromSource() {
+    try {
+      const corePath = path.join(__dirname, '..', 'app', 'js', 'core.js');
+      const source = fsModule.readFileSync(corePath, 'utf8');
+      const match = source.match(/skidinc\.version\s*=\s*([0-9]+(?:\.[0-9]+)?)/);
+
+      if (!match) {
+        throw new Error('Unable to find skidinc.version assignment in app/js/core.js');
+      }
+
+      return `${match[1]}`;
+    } catch (error) {
+      console.warn(`Failed to detect game version from source, using fallback: ${error.message}`);
+      return '0.0.0';
+    }
   }
 
   createSuccessResponse(data = null) {
@@ -415,9 +435,14 @@ class ElectronApp {
 
   async initializeModLoader() {
     try {
-      this.modLoader = new ModLoader();
+      this.modLoader = new ModLoader({
+        appVersion: app.getVersion(),
+        gameVersion: this.gameVersion,
+        safeStart: isSafeStart
+      });
       const state = await this.modLoader.initialize();
-      console.log(`Mod loader initialized with ${state.mods.length} mod(s)`);
+      const safeStartMessage = isSafeStart ? ' (safe-start mode active)' : '';
+      console.log(`Mod loader initialized with ${state.mods.length} mod(s)${safeStartMessage}`);
     } catch (error) {
       console.error('Failed to initialize mod loader:', error.message);
     }
