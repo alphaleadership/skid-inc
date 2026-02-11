@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Kanban Workflows
-        uses: alphaleadership/kanbanaction@main
+        uses: alphaleadership/kanbanaction@master
         with:
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
