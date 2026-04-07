@@ -62,15 +62,37 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getModErrors: () => ipcRenderer.invoke('mods-get-errors'),
   openModsDirectory: () => ipcRenderer.invoke('mods-open-directory'),
   
+  // Auto-updater methods
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  downloadUpdate: () => ipcRenderer.invoke('download-update'),
+  installUpdate: () => ipcRenderer.invoke('install-update'),
+  getUpdateStatus: () => ipcRenderer.invoke('get-update-status'),
+  
   // Event listeners
   onSaveStatus: (callback) => ipcRenderer.on('save-status', callback),
   onAutoSaveEvent: (callback) => ipcRenderer.on('auto-save-event', callback),
   onMigrationPrompt: (callback) => ipcRenderer.on('migration-prompt', callback),
   onMigrationStatus: (callback) => ipcRenderer.on('migration-status', callback),
+  onUpdateChecking: (callback) => ipcRenderer.on('update-checking', callback),
+  onUpdateAvailable: (callback) => ipcRenderer.on('update-available', callback),
+  onUpdateNotAvailable: (callback) => ipcRenderer.on('update-not-available', callback),
+  onUpdateDownloading: (callback) => ipcRenderer.on('update-downloading', callback),
+  onUpdateDownloadProgress: (callback) => ipcRenderer.on('update-download-progress', callback),
+  onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', callback),
+  onUpdateError: (callback) => ipcRenderer.on('update-error', callback),
   
   // Remove specific listeners
   removeSaveStatusListener: () => ipcRenderer.removeAllListeners('save-status'),
   removeAutoSaveEventListener: () => ipcRenderer.removeAllListeners('auto-save-event'),
   removeMigrationPromptListener: () => ipcRenderer.removeAllListeners('migration-prompt'),
-  removeMigrationStatusListener: () => ipcRenderer.removeAllListeners('migration-status')
+  removeMigrationStatusListener: () => ipcRenderer.removeAllListeners('migration-status'),
+  removeUpdateListeners: () => {
+    ipcRenderer.removeAllListeners('update-checking');
+    ipcRenderer.removeAllListeners('update-available');
+    ipcRenderer.removeAllListeners('update-not-available');
+    ipcRenderer.removeAllListeners('update-downloading');
+    ipcRenderer.removeAllListeners('update-download-progress');
+    ipcRenderer.removeAllListeners('update-downloaded');
+    ipcRenderer.removeAllListeners('update-error');
+  }
 });

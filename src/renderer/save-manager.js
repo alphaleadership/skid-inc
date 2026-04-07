@@ -1552,10 +1552,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Initialize migration UI manager
   window.migrationUIManager = new MigrationUIManager();
-  
+
+  // Initialize update UI manager
+  window.updateUIManager = new UpdateUIManager(window.notificationManager);
+
   // Initialize save state manager
-  window.saveStateManager = new SaveStateManager();
-  
+  window.saveStateManager = new SaveStateManager();  
   // Connect notification manager to save state manager
   if (window.saveStateManager && window.notificationManager) {
     // Override the showNotification method to use NotificationManager
