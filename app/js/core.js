@@ -19,25 +19,25 @@ skidinc.update = function(times) {
 };
 
 skidinc.stats = function() {
-    $('#stats-overview #player #money').html('$' + fix(this.player.money, 0));
-    $('#stats-overview #player #total-money').html('$' + fix(this.player.totalMoney, 0));
-    $('#stats-overview #player #exp').html(fix(this.player.exp, 0) + '/' + fix(this.player.expReq, 0));
-    $('#stats-overview #player #total-exp').html(fix(this.player.totalExp, 0));
-    $('#stats-overview #player #level').html(fix(this.player.level, 0));
+    $('#stats-overview #player #money').html('$' + fix(skidinc.player.money, 0));
+    $('#stats-overview #player #total-money').html('$' + fix(skidinc.player.totalMoney, 0));
+    $('#stats-overview #player #exp').html(fix(skidinc.player.exp, 0) + '/' + fix(skidinc.player.expReq, 0));
+    $('#stats-overview #player #total-exp').html(fix(skidinc.player.totalExp, 0));
+    $('#stats-overview #player #level').html(fix(skidinc.player.level, 0));
     
-    $('#stats-overview #script #executed').html(this.script.isExecuted());
-    $('#stats-overview #script #name').html(this.script.getName());
-    $('#stats-overview #script #time').html(fix(this.script.time, 2) + 's');
+    $('#stats-overview #script #executed').html(skidinc.script.isExecuted());
+    $('#stats-overview #script #name').html(skidinc.script.getName());
+    $('#stats-overview #script #time').html(fix(skidinc.script.time, 2) + 's');
     
-    $('#stats-overview #telnet #level').html('Lvl. ' + fix(this.server.owned[this.server.telnet.index], 0));
-    $('#stats-overview #telnet #price').html('$' + fix(this.server.getPrice('telnet'), 0));
+    $('#stats-overview #telnet #level').html('Lvl. ' + fix(skidinc.server.owned[skidinc.server.telnet.index], 0));
+    $('#stats-overview #telnet #price').html('$' + fix(skidinc.server.getPrice('telnet'), 0));
     
-    $('#stats-overview #web #level').html('Lvl. ' + fix(this.server.owned[this.server.web.index], 0));
-    $('#stats-overview #web #price').html('$' + fix(this.server.getPrice('web'), 0));
+    $('#stats-overview #web #level').html('Lvl. ' + fix(skidinc.server.owned[skidinc.server.web.index], 0));
+    $('#stats-overview #web #price').html('$' + fix(skidinc.server.getPrice('web'), 0));
     
-    $('#stats-overview #mults #money').html('x' + fix(this.player.getMoneyMult(true), 2));
-    $('#stats-overview #mults #exp').html('x' + fix(this.player.getExpMult(true), 2));
-    $('#stats-overview #mults #time').html('/' + fix(this.player.getTimeMult(), 2));
+    $('#stats-overview #mults #money').html('x' + fix(skidinc.player.getMoneyMult(true), 2));
+    $('#stats-overview #mults #exp').html('x' + fix(skidinc.player.getExpMult(true), 2));
+    $('#stats-overview #mults #time').html('/' + fix(skidinc.player.getTimeMult(), 2));
     
     $('#stats-overview #prestige #botnet').html(fix(skidinc.player.botnet, 0));
     $('#stats-overview #prestige #botnet-reset').html(fix(skidinc.prestige.botnetOnReset, 0));

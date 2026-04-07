@@ -11,45 +11,45 @@ skidinc.player.botnet = 0;
 skidinc.player.multiplierLevel = 0;
 
 skidinc.player.getTimeMult = function() {
-    return skidinc.server.getEffects('telnet').time * skidinc.battery.getTimeEffect() * this.getMultiplierBoost();
+    return skidinc.server.getEffects('telnet').time * skidinc.battery.getTimeEffect() * skidinc.player.getMultiplierBoost();
 };
 
 skidinc.player.getMultiplierBoost = function() {
-    return 1 + (this.multiplierLevel * 0.05);
+    return 1 + (skidinc.player.multiplierLevel * 0.05);
 };
 
 skidinc.player.getMoneyMult = function(display) {
     if (display)
-        return skidinc.server.getEffects('web').money * skidinc.battery.getMoneyEffect() * this.getMultiplierBoost();
+        return skidinc.server.getEffects('web').money * skidinc.battery.getMoneyEffect() * skidinc.player.getMultiplierBoost();
     
-    return (skidinc.server.getEffects('web').money * skidinc.battery.getMoneyEffect() * this.getMultiplierBoost()) * skidinc.prestige.getPrestigeMult();
+    return (skidinc.server.getEffects('web').money * skidinc.battery.getMoneyEffect() * skidinc.player.getMultiplierBoost()) * skidinc.prestige.getPrestigeMult();
 };
 
 skidinc.player.getExpMult = function(display) {
     if (display)
-        return skidinc.server.getEffects('web').exp * skidinc.battery.getExpEffect() * this.getMultiplierBoost();
+        return skidinc.server.getEffects('web').exp * skidinc.battery.getExpEffect() * skidinc.player.getMultiplierBoost();
     
-    return (skidinc.server.getEffects('web').exp * skidinc.battery.getExpEffect() * this.getMultiplierBoost()) * skidinc.prestige.getPrestigeMult();
+    return (skidinc.server.getEffects('web').exp * skidinc.battery.getExpEffect() * skidinc.player.getMultiplierBoost()) * skidinc.prestige.getPrestigeMult();
 };
 
 skidinc.player.getMultiplierCost = function() {
-    return Math.floor(50000 * Math.pow(2.4, this.multiplierLevel));
+    return Math.floor(50000 * Math.pow(2.4, skidinc.player.multiplierLevel));
 };
 
 skidinc.player.listMultiplier = function() {
-    return '<b>*</b> level <b>' + this.multiplierLevel + '</b>, boost <b>x' + fix(this.getMultiplierBoost(), 2) + '</b>, next upgrade cost <b>$' + fix(this.getMultiplierCost(), 0) + '</b>.';
+    return '<b>*</b> level <b>' + skidinc.player.multiplierLevel + '</b>, boost <b>x' + fix(skidinc.player.getMultiplierBoost(), 2) + '</b>, next upgrade cost <b>$' + fix(skidinc.player.getMultiplierCost(), 0) + '</b>.';
 };
 
 skidinc.player.buyMultiplier = function() {
-    var cost = this.getMultiplierCost();
+    var cost = skidinc.player.getMultiplierCost();
 
-    if (this.money < cost)
+    if (skidinc.player.money < cost)
         return skidinc.console.print('<x>ERR</x> not enough money to buy multiplier upgrade (cost <b>$' + fix(cost, 0) + '</b>).');
 
-    this.money -= cost;
-    this.multiplierLevel++;
+    skidinc.player.money -= cost;
+    skidinc.player.multiplierLevel++;
 
-    return skidinc.console.print('Multiplier upgraded to <b>lvl ' + this.multiplierLevel + '</b> (boost x' + fix(this.getMultiplierBoost(), 2) + ').');
+    return skidinc.console.print('Multiplier upgraded to <b>lvl ' + skidinc.player.multiplierLevel + '</b> (boost x' + fix(skidinc.player.getMultiplierBoost(), 2) + ').');
 };
 
 skidinc.player.setUsernamePrefix = function() {
@@ -89,19 +89,19 @@ skidinc.player.setUsername = function(args) {
 
 skidinc.player.earn = function(type, amount) {
     if (type == 'money') {
-        this.money += amount;
-        this.totalMoney += amount;
+        skidinc.player.money += amount;
+        skidinc.player.totalMoney += amount;
     };
     
     if (type == 'exp') {
-        this.exp += amount;
-        this.totalExp += amount;
+        skidinc.player.exp += amount;
+        skidinc.player.totalExp += amount;
         
-        while (this.exp >= this.expReq) {
-            this.level++;
-            this.exp -= this.expReq;
-            this.expReq = Math.floor(100 * Math.pow(1.5, this.level));
-            skidinc.console.print('<z>LEVEL-UP!</z> You are now level <b>' + this.level + '</b>!');
+        while (skidinc.player.exp >= skidinc.player.expReq) {
+            skidinc.player.level++;
+            skidinc.player.exp -= skidinc.player.expReq;
+            skidinc.player.expReq = Math.floor(100 * Math.pow(1.5, skidinc.player.level));
+            skidinc.console.print('<z>LEVEL-UP!</z> You are now level <b>' + skidinc.player.level + '</b>!');
         };
     };
 };
